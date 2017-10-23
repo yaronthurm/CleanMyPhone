@@ -1,13 +1,13 @@
 # CleanMyPhone
-A small desktop app to help clean my/yours phone by copying all photos from it to the desktop and then delete the photos from the phone (while keeping you in full control as for what to delete and how much)
+A small desktop app to help clean my phone by copying all photos from it to the desktop and then delete the photos from the phone (while keeping me in full control as for what to delete and how much)
 
 *This app is still in beta.*
 
 Manual setup is currently required to use it.
 1. See the "Example" directory to see how the setup looks like.
-	1.1. Basically, you have an AppFolder (which is defined in the App.config file) - You need to change it manully to point to where ever you want on you PC.
+	1.1. Basically, there is an AppFolder (which is defined in the App.config file) - Change it manully to point to whetever directory on your PC.
 	1.2. Inside the AppFolder, create a "Devices" folder.
-	1.3. In the "Devices" folder create a seperate folder for each device you intend to connect with, which is named with the device id (you can choose whatever id you want)
+	1.3. In the "Devices" folder create a seperate folder for each device you intend to connect with, which is named after the device id (you can choose whatever id you want)
 	1.4. In the "per device folder" create a "Setting.txt" file which will control the setting for that device. You can use the file from the example
 	and tweek around to suit you'r needs.
 	1.5. In the "per device folder" create a "ExcludeFromCleanup.txt" file which will contains all file names you would like to be excluded 
