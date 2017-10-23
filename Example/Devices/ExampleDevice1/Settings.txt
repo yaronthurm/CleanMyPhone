@@ -1,0 +1,8 @@
+port = 8080
+username = x
+password = y
+source-folder = /DCIM/Camera
+destination-folder = ..\..\DestinationFolder
+high-mb-threshold = 20000
+low-mb-threshold = 19000
+idle-time-between-runs-in-seconds = 180
