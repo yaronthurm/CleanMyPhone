@@ -1,2 +1,2 @@
-1.jpg
-2.mp4
+file1.jpg
+file2.mp4
