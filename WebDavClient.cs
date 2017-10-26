@@ -153,7 +153,7 @@ namespace CleanMyPhone
             HttpResponseMessage res = await _client.SendAsync(req);
             var body = await res.Content.ReadAsStringAsync();
 
-            if (res.StatusCode != HttpStatusCode.OK)
+            if (res.StatusCode != HttpStatusCode.OK && res.StatusCode != HttpStatusCode.NoContent)
                 throw new Exception($"Failed deleting path {path}");
         }
 
