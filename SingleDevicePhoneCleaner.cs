@@ -343,7 +343,6 @@ namespace CleanMyPhone
 
                 // Filter out files that should not be removed
                 var validSourceFilesForDeletion = _sourceFiles
-                    .Where(x => x.CreationTimeUtc < DateTime.UtcNow.AddMonths(-1)) // Exclude files that were created during the last month's
                     .Where(x => x.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-1)) // For cases where the 'created' attribute is missing (e.g. when mapping a drive over WebDAV)
                     .Where(x => !excludeFilesShortName.Contains(x.Name)) // Respect exclude files list
                     .ToArray();
