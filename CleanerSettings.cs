@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -49,7 +50,7 @@ namespace CleanMyPhone
                     id = Path.GetFileName(x),
                     settings = CleanerSettings.LoadFromFile(Path.Combine(x, "Settings.txt"))
                 })
-                .ToDictionary(x => x.id, x => x.settings);
+                .ToDictionary(x => x.id, x => x.settings, StringComparer.OrdinalIgnoreCase);
             return ret;
         }
     }

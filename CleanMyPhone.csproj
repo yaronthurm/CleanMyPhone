@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="CleanerSettings.cs" />
     <Compile Include="DeviceGuid.cs" />
+    <Compile Include="DeviceSetup.cs" />
     <Compile Include="EmailSender.cs" />
     <Compile Include="IFileManager.cs" />
     <Compile Include="Program.cs" />

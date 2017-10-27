@@ -23,21 +23,105 @@ namespace CleanMyPhone
 
             var appFolder = ConfigurationManager.AppSettings["AppFolder"];
 
-            if (args.Any(x => x.StartsWith("-deviceID=")))
+            if (args.Any(x => x.StartsWith("-setup")) && !isHidden)
             {
-                var deviceID = args.First(x => x.StartsWith("-deviceID=")).Replace("-deviceID=", "");
-                ExitAppIfAnotherProcessIsRunning(deviceID);
-
-                var deviceSettings = CleanerSettings.GetAllConfigs(appFolder)[deviceID];
-                var cleaner = new SingleDevicePhoneCleaner(deviceID, deviceSettings);
-                if (!isHidden)
-                    Console.Title = $"Cleaner-{deviceID}";
-                cleaner.Run();
+                StartSetupFlow(appFolder);
+            }
+            else if (args.Any(x => x.StartsWith("-deviceID=")))
+            {
+                StartDpecificDeviceFlow(args, appFolder, isHidden);
             }
             else {
-                var cleaner = new MultipleDevicesCleaner(appFolder, isHidden);
-                cleaner.Run();
+                StartMultipleDevicesFlow(appFolder, isHidden);
             }
+        }
+
+        private static void StartSetupFlow(string appFolder)
+        {
+            string deviceID;
+            while (true)
+            {
+                Console.WriteLine("Enter desired decive ID (Valid charecters: a-z,A-Z,0-9,'_','-',' ', up to 100 charecters)");
+                deviceID = Console.ReadLine();
+                if (!IsDeviceIDValid(deviceID))
+                {
+                    Console.WriteLine("Device ID is invalid");
+                }
+                else if (DeviceIDAlreadyExists(deviceID, appFolder))
+                {
+                    Console.WriteLine("Device ID already exist");
+                }
+                else
+                    break;
+            }
+
+            string ip;
+            Console.WriteLine("Enter decive IP");
+            ip = Console.ReadLine();
+
+            string port;
+            Console.WriteLine("Enter port");
+            port = Console.ReadLine();
+
+            string usename;
+            Console.WriteLine("Enter username");
+            usename = Console.ReadLine();
+
+            string password;
+            Console.WriteLine("Enter password");
+            password = Console.ReadLine();
+
+            string sourceFolder;
+            Console.WriteLine("Enter source folder (usually DCIM/Camera)");
+            sourceFolder = Console.ReadLine();
+
+            string destinationFolder;
+            Console.WriteLine("Enter destination folder");
+            destinationFolder = Console.ReadLine();
+
+            string idleTimeInSeconds;
+            Console.WriteLine("Enter Idle time in seconds (e.g. 180)");
+            idleTimeInSeconds = Console.ReadLine();
+        }
+
+        private static bool DeviceIDAlreadyExists(string deviceID, string appFolder)
+        {
+            var deviceSettings = CleanerSettings.GetAllConfigs(appFolder);
+            return deviceSettings.ContainsKey(deviceID);
+        }
+
+        private static bool IsDeviceIDValid(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || id.Length > 100)
+                return false;
+            foreach (var c in id)
+            {
+                if (!(c >= '0' && c <= '9') &&
+                    !(c >= 'a' && c <= 'z') &&
+                    !(c >= 'A' && c <= 'Z') &&
+                    !(c == '-' || c == '_' || c == ' '))
+
+                    return false;
+            }
+            return true;
+        }
+
+        private static void StartMultipleDevicesFlow(string appFolder, bool isHidden)
+        {
+            var cleaner = new MultipleDevicesCleaner(appFolder, isHidden);
+            cleaner.Run();
+        }
+
+        private static void StartDpecificDeviceFlow(string[] args, string appFolder, bool isHidden)
+        {
+            var deviceID = args.First(x => x.StartsWith("-deviceID=")).Replace("-deviceID=", "");
+            ExitAppIfAnotherProcessIsRunning(deviceID);
+
+            var deviceSettings = CleanerSettings.GetAllConfigs(appFolder)[deviceID];
+            var cleaner = new SingleDevicePhoneCleaner(deviceID, deviceSettings);
+            if (!isHidden)
+                Console.Title = $"Cleaner-{deviceID}";
+            cleaner.Run();
         }
 
         private static void ExitAppIfAnotherProcessIsRunning(string deviceID)
