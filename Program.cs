@@ -22,7 +22,7 @@ namespace CleanMyPhone
             if (!isHidden)
                 AllocConsole();
 
-            var appFolder = ConfigurationManager.AppSettings["AppFolder"];
+            var appFolder = GetAppFolder();
 
             if (args.Any(x => x.StartsWith("-setup")) && !isHidden)
             {
@@ -35,6 +35,16 @@ namespace CleanMyPhone
             else {
                 StartMultipleDevicesFlow(appFolder, isHidden);
             }
+        }
+
+        private static string GetAppFolder()
+        {
+            var pathToAppFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "CleanMyPhone");
+            if (!Directory.Exists(pathToAppFolder))
+                Directory.CreateDirectory(pathToAppFolder);
+            return pathToAppFolder;
         }
 
         private static void StartSetupFlow(string appFolder)
