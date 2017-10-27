@@ -77,6 +77,16 @@ namespace CleanMyPhone
             return ret;
         }
 
+        public void CreateDirectory(string path)
+        {
+            _myWebDavClient.CreateDir(path).Wait();
+        }
+
+        public void CreateFile(string filename, string fileContent)
+        {
+            _myWebDavClient.CreateFile(filename, fileContent).Wait();
+        }
+
         private static DateTime? ParseToDateTime(string value)
         {
             if (string.IsNullOrEmpty(value)) return null;

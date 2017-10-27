@@ -157,6 +157,28 @@ namespace CleanMyPhone
                 throw new Exception($"Failed deleting path {path}");
         }
 
+        public async Task CreateDir(string path)
+        {
+            var req = new HttpRequestMessage(new HttpMethod("MKCOL"), $"http://{Server}:{Port}/{path.TrimStart('/')}");
+            req.Headers.Connection.Add("Keep-Alive");
+
+            HttpResponseMessage res = await _client.SendAsync(req);
+
+            if (res.StatusCode != HttpStatusCode.Created)
+                throw new Exception("Failed creating directory.");
+        }
+
+        public async Task CreateFile(string path, string content)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Put, $"http://{Server}:{Port}/{path.TrimStart('/')}");
+            req.Content = new StringContent(content);
+            req.Headers.Connection.Add("Keep-Alive");
+
+            HttpResponseMessage res = await _client.SendAsync(req);
+
+            if (res.StatusCode != HttpStatusCode.Created)
+                throw new Exception("Failed uploading content.");
+        }
 
         public static IEnumerable<Item> ParseResponse(string xmlBody)
         {

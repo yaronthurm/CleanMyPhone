@@ -63,9 +63,9 @@ namespace CleanMyPhone
             Console.WriteLine("Enter port");
             port = Console.ReadLine();
 
-            string usename;
+            string username;
             Console.WriteLine("Enter username");
-            usename = Console.ReadLine();
+            username = Console.ReadLine();
 
             string password;
             Console.WriteLine("Enter password");
@@ -79,9 +79,20 @@ namespace CleanMyPhone
             Console.WriteLine("Enter destination folder");
             destinationFolder = Console.ReadLine();
 
+            string highThreshold;
+            Console.WriteLine("Enter High threshod [MB]");
+            highThreshold = Console.ReadLine();
+
+            string lowThreshold;
+            Console.WriteLine("Enter Low threshold [MB]");
+            lowThreshold = Console.ReadLine();
+
             string idleTimeInSeconds;
             Console.WriteLine("Enter Idle time in seconds (e.g. 180)");
             idleTimeInSeconds = Console.ReadLine();
+
+
+            DeviceSetup.SetupDevice(appFolder, deviceID, ip, port, username, password, sourceFolder, destinationFolder, highThreshold, lowThreshold, idleTimeInSeconds);
         }
 
         private static bool DeviceIDAlreadyExists(string deviceID, string appFolder)
