@@ -45,9 +45,12 @@ namespace CleanMyPhone
                     MarkStartTime();
                     InitializeSourceFilesList();
                     CopyMissingFiles();
-                    var filesToDelete = GetListOfFilesToDelete(_deviceSettings.HighMbThreshold, _deviceSettings.LowMbThreshold, GetExcludeList());
-                    if (filesToDelete.Any())
-                        DeleteFilesForCleanup(filesToDelete);
+                    if (EnableDeleting())
+                    {
+                        var filesToDelete = GetListOfFilesToDelete(_deviceSettings.HighMbThreshold, _deviceSettings.LowMbThreshold, GetExcludeList());
+                        if (filesToDelete.Any())
+                            DeleteFilesForCleanup(filesToDelete);
+                    }
                     MarkEndTime();
                     TrySendSuccessRunEmail();
                 }
@@ -62,6 +65,11 @@ namespace CleanMyPhone
                     WaitForIdleTimeToPass();
                 }
             }
+        }
+
+        private bool EnableDeleting()
+        {
+            return _deviceSettings.EnableDeleting;
         }
 
         private void TrySendFailedRunEmail(Exception ex)
@@ -187,8 +195,12 @@ namespace CleanMyPhone
             WriteToConsoleAndToLog($"\tSourceFolder: {_deviceSettings.SourceFolder}");
             WriteToConsoleAndToLog($"\tDestinationFolder: {_deviceSettings.DestinationFolder}");
             WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.DeviceFolder}");
-            WriteToConsoleAndToLog($"\tHighMBThreshold: {_deviceSettings.HighMbThreshold}");
-            WriteToConsoleAndToLog($"\tLowMBThreshold: {_deviceSettings.LowMbThreshold}");
+            WriteToConsoleAndToLog($"\tEnalebDeleting: {_deviceSettings.EnableDeleting}");
+            if (_deviceSettings.EnableDeleting)
+            {
+                WriteToConsoleAndToLog($"\tHighMBThreshold: {_deviceSettings.HighMbThreshold}");
+                WriteToConsoleAndToLog($"\tLowMBThreshold: {_deviceSettings.LowMbThreshold}");
+            }
         }
 
         private void WaitForIdleTimeToPass()
