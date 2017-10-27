@@ -17,6 +17,8 @@ namespace CleanMyPhone
         public int IdleTimeBetweenRunsInSeconds { get; private set; }
         public string SettingsFile { get; private set; }
         public string DeviceFolder { get; private set; }
+        public bool EnableDeleting { get; private set; }
+
 
         public static CleanerSettings LoadFromFile(string filename)
         {
@@ -36,6 +38,7 @@ namespace CleanMyPhone
             ret.HighMbThreshold = int.Parse(configValues["high-mb-threshold"]);
             ret.LowMbThreshold = int.Parse(configValues["low-mb-threshold"]);
             ret.IdleTimeBetweenRunsInSeconds = int.Parse(configValues["idle-time-between-runs-in-seconds"]);
+            ret.EnableDeleting = bool.Parse(configValues["enable-deleting"]);
 
             return ret;
         }
