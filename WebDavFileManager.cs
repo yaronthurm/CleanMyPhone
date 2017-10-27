@@ -82,9 +82,9 @@ namespace CleanMyPhone
             _myWebDavClient.CreateDir(path).Wait();
         }
 
-        public void CreateFile(string filename, string fileContent)
+        public void CreateOrUpdateFile(string filename, string fileContent)
         {
-            _myWebDavClient.CreateFile(filename, fileContent).Wait();
+            _myWebDavClient.CreateOrUpdateFile(filename, fileContent).Wait();
         }
 
         private static DateTime? ParseToDateTime(string value)

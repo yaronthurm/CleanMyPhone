@@ -164,11 +164,13 @@ namespace CleanMyPhone
 
             HttpResponseMessage res = await _client.SendAsync(req);
 
-            if (res.StatusCode != HttpStatusCode.Created)
+            if (res.StatusCode != HttpStatusCode.OK &&
+                res.StatusCode != HttpStatusCode.Created &&
+                res.StatusCode != HttpStatusCode.NoContent)
                 throw new Exception("Failed creating directory.");
         }
 
-        public async Task CreateFile(string path, string content)
+        public async Task CreateOrUpdateFile(string path, string content)
         {
             var req = new HttpRequestMessage(HttpMethod.Put, $"http://{Server}:{Port}/{path.TrimStart('/')}");
             req.Content = new StringContent(content);
@@ -176,7 +178,9 @@ namespace CleanMyPhone
 
             HttpResponseMessage res = await _client.SendAsync(req);
 
-            if (res.StatusCode != HttpStatusCode.Created)
+            if (res.StatusCode != HttpStatusCode.OK &&
+                res.StatusCode != HttpStatusCode.Created &&
+                res.StatusCode != HttpStatusCode.NoContent)
                 throw new Exception("Failed uploading content.");
         }
 

@@ -9,9 +9,14 @@ namespace CleanMyPhone
 {
     public class DeviceSetup
     {
-        public static void SetupDevice(string appFolder, string deviceID, string ip, string port, string username, string password,
-            string sourceFolder, string destinationFolder, string highThreshold, string lowThreshold, string idleTimeInSeconds)
+        public static void SetupDevice(string appFolder, string deviceID, string ip, int port, string username, string password,
+            string sourceFolder, string destinationFolder, int highThreshold, int lowThreshold, int idleTimeInSeconds)
         {
+            var webDav = new WebDavFileManager(ip, port, username, password);
+            if (!webDav.Exist("/Cleaner"))
+                webDav.CreateDirectory("/CleaneR");
+            webDav.CreateOrUpdateFile("/Cleaner/guid.txt", $"id = {deviceID}");
+
             var tmpSettingsFile = Path.GetTempFileName();
             File.WriteAllLines(tmpSettingsFile, new[] {
                 $"port = {port}",
@@ -28,11 +33,6 @@ namespace CleanMyPhone
             var settingsPath = Path.Combine(appFolder, "Devices", deviceID, "Settings.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
             File.Move(tmpSettingsFile, settingsPath);
-
-
-            var webDav = new WebDavFileManager(ip, int.Parse(port), username, password);
-            webDav.CreateDirectory("/Cleaner");
-            webDav.CreateFile("/Cleaner/guid.txt", $"id = {deviceID}");
         }
     }
 }

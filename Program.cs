@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -38,61 +39,58 @@ namespace CleanMyPhone
 
         private static void StartSetupFlow(string appFolder)
         {
-            string deviceID;
-            while (true)
-            {
-                Console.WriteLine("Enter desired decive ID (Valid charecters: a-z,A-Z,0-9,'_','-',' ', up to 100 charecters)");
-                deviceID = Console.ReadLine();
-                if (!IsDeviceIDValid(deviceID))
-                {
-                    Console.WriteLine("Device ID is invalid");
-                }
-                else if (DeviceIDAlreadyExists(deviceID, appFolder))
-                {
-                    Console.WriteLine("Device ID already exist");
-                }
-                else
-                    break;
-            }
+            string deviceID = ReadFromConsole(
+                "Enter desired decive ID (Valid charecters: a-z,A-Z,0-9,'_','-',' ', up to 100 charecters)",
+                "Invalid devide ID",
+                IsDeviceIDValid,
+                x => x);
 
-            string ip;
-            Console.WriteLine("Enter decive IP");
-            ip = Console.ReadLine();
-
-            string port;
-            Console.WriteLine("Enter port");
-            port = Console.ReadLine();
-
-            string username;
-            Console.WriteLine("Enter username");
-            username = Console.ReadLine();
-
-            string password;
-            Console.WriteLine("Enter password");
-            password = Console.ReadLine();
-
-            string sourceFolder;
-            Console.WriteLine("Enter source folder (usually DCIM/Camera)");
-            sourceFolder = Console.ReadLine();
-
-            string destinationFolder;
-            Console.WriteLine("Enter destination folder");
-            destinationFolder = Console.ReadLine();
-
-            string highThreshold;
-            Console.WriteLine("Enter High threshod [MB]");
-            highThreshold = Console.ReadLine();
-
-            string lowThreshold;
-            Console.WriteLine("Enter Low threshold [MB]");
-            lowThreshold = Console.ReadLine();
-
-            string idleTimeInSeconds;
-            Console.WriteLine("Enter Idle time in seconds (e.g. 180)");
-            idleTimeInSeconds = Console.ReadLine();
-
+            string ip = ReadFromConsole("Enter device IP", "Invalid IP format", IsValidIP, x => IPAddress.Parse(x).ToString());
+            int port = ReadFromConsole("Enter port", "Invalid port (1-65535)", x => IsValidInt(x, 1, 65535), int.Parse);
+            string username = ReadFromConsole("Enter username", "", x => true, x => x);
+            string password = ReadFromConsole("Enter password", "", x => true, x => x);
+            string sourceFolder = ReadFromConsole("Enter source folder (usually DCIM/Camera)", "", x => true, x => x);
+            string destinationFolder = ReadFromConsole("Enter destination folder", "", x => true, x => x);
+            int highThreshold = ReadFromConsole("Enter High threshod [MB] (10,000-50,000)", "Invalid value", x => IsValidInt(x, 10000, 50000), int.Parse);
+            int lowThreshold = ReadFromConsole("Enter Low threshold [MB] (10,000-50,000)", "Invalid value", x => IsValidInt(x, 10000, 50000), int.Parse);
+            int idleTimeInSeconds = ReadFromConsole("Enter Idle time in seconds (180-1800)", "Invalid value", x => IsValidInt(x, 180, 1800), int.Parse);
 
             DeviceSetup.SetupDevice(appFolder, deviceID, ip, port, username, password, sourceFolder, destinationFolder, highThreshold, lowThreshold, idleTimeInSeconds);
+        }
+
+        private static T ReadFromConsole<T>(string text, string errorText, Func<string, bool> checkInput, Func<string, T> selector)
+        {
+            while (true)
+            {
+                Console.WriteLine(text);
+                var input = Console.ReadLine();
+                if (!checkInput(input))
+                {
+                    Console.WriteLine(errorText);
+                }
+                else {
+                    var ret = selector(input);
+                    return ret;
+                }
+            }
+        }
+
+        private static bool IsValidIP(string ip)
+        {
+            IPAddress tmp;
+            var ret = IPAddress.TryParse(ip, out tmp);
+            return ret;
+        }
+
+        private static bool IsValidInt(string valueString, int min, int max)
+        {
+            int value;
+            if (!int.TryParse(valueString, out value))
+                return false;
+            if (value < min || value > max)
+                return false;
+            return true;
+              
         }
 
         private static bool DeviceIDAlreadyExists(string deviceID, string appFolder)
