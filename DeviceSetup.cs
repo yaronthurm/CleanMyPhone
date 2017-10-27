@@ -38,7 +38,7 @@ namespace CleanMyPhone
         {
             var webDav = new WebDavFileManager(ip, port, username, password);
             if (!webDav.Exist("/Cleaner"))
-                webDav.CreateDirectory("/CleaneR");
+                webDav.CreateDirectory("/Cleaner");
             webDav.CreateOrUpdateFile("/Cleaner/guid.txt", $"id = {deviceID}");
 
             var tmpSettingsFile = Path.GetTempFileName();
@@ -50,7 +50,6 @@ namespace CleanMyPhone
                 $"destination-folder = {destinationFolder}",
                 $"enable-deleting = {enableDelete}",
                 $"high-mb-threshold = {highThreshold}",
-                $"low-mb-threshold = {lowThreshold}",
                 $"low-mb-threshold = {lowThreshold}",
                 $"idle-time-between-runs-in-seconds = {idleTimeInSeconds}",
                 });

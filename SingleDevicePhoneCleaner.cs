@@ -103,7 +103,9 @@ namespace CleanMyPhone
         {
             WriteToConsoleAndToLog("Retrieving files from source");
             _sourceFiles = _sourceFileManager.ListFiles(_deviceSettings.SourceFolder).ToArray();
-            WriteToConsoleAndToLog($"Found {_sourceFiles.Length} Files. Total size: {BytesToMegabytes(_sourceFiles.Sum(x => x.SizeInBytes)):0.##[MB]}");
+            var totalSizeMB = BytesToMegabytes(_sourceFiles.Select(x => x.SizeInBytes).Sum());
+            _summary.TotalMbBeforeDelete = totalSizeMB;
+            WriteToConsoleAndToLog($"Found {_sourceFiles.Length} Files. Total size: {totalSizeMB:0.##[MB]}");
         }
 
 
@@ -195,7 +197,7 @@ namespace CleanMyPhone
             WriteToConsoleAndToLog($"\tSourceFolder: {_deviceSettings.SourceFolder}");
             WriteToConsoleAndToLog($"\tDestinationFolder: {_deviceSettings.DestinationFolder}");
             WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.DeviceFolder}");
-            WriteToConsoleAndToLog($"\tEnalebDeleting: {_deviceSettings.EnableDeleting}");
+            WriteToConsoleAndToLog($"\tEnableDeleting: {_deviceSettings.EnableDeleting}");
             if (_deviceSettings.EnableDeleting)
             {
                 WriteToConsoleAndToLog($"\tHighMBThreshold: {_deviceSettings.HighMbThreshold}");
@@ -347,7 +349,6 @@ namespace CleanMyPhone
 
             _summary.HighMBThreshold = highMBThreshold;
             _summary.LowMBThreshold = lowMBThreshold;
-            _summary.TotalMbBeforeDelete = totalSizeMB;
             if (totalSizeMB > highMBThreshold)
             {
                 var amountToRemoveMB = totalSizeMB - lowMBThreshold;
