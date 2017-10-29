@@ -38,9 +38,7 @@
             // _notifyIcon
             // 
             this._notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this._notifyIcon.BalloonTipText = "123";
-            this._notifyIcon.BalloonTipTitle = "123";
-            this._notifyIcon.Text = "notifyIcon1";
+            this._notifyIcon.Text = "CleanMyPhone";
             this._notifyIcon.Visible = true;
             this._notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
             // 

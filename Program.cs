@@ -20,6 +20,8 @@ namespace CleanMyPhone
         [STAThread]
         static void Main(string[] args)
         {
+            ExitAppIfAnotherProcessIsRunning("CleanMyPhone");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -30,59 +32,11 @@ namespace CleanMyPhone
                 mainForm.WindowState = FormWindowState.Minimized;
 
             Application.Run(mainForm);
-            return;
-
-            if (!isHidden)
-                AllocConsole();
-
-            var appFolder = GetAppFolder();
-
-            if (args.Any(x => x.StartsWith("-setup")) && !isHidden)
-            {
-                StartSetupFlow(appFolder);
-            }
-            else if (args.Any(x => x.StartsWith("-deviceID=")))
-            {
-                StartDpecificDeviceFlow(args, appFolder, isHidden);
-            }
-            else {
-                StartMultipleDevicesFlow(appFolder, isHidden);
-            }
-        }
-
-        private static string GetAppFolder()
-        {
-            var pathToAppFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "CleanMyPhone");
-            if (!Directory.Exists(pathToAppFolder))
-                Directory.CreateDirectory(pathToAppFolder);
-            return pathToAppFolder;
         }
 
         private static void StartSetupFlow(string appFolder)
         {
             DeviceSetup.ReadFromConsoleAndSetupDevice(appFolder);
-        }
-
-        
-
-        private static void StartMultipleDevicesFlow(string appFolder, bool isHidden)
-        {
-            var cleaner = new MultipleDevicesCleaner(appFolder, isHidden);
-            cleaner.Run();
-        }
-
-        private static void StartDpecificDeviceFlow(string[] args, string appFolder, bool isHidden)
-        {
-            var deviceID = args.First(x => x.StartsWith("-deviceID=")).Replace("-deviceID=", "");
-            ExitAppIfAnotherProcessIsRunning(deviceID);
-
-            var deviceSettings = CleanerSettings.GetAllConfigs(appFolder)[deviceID];
-            var cleaner = new SingleDevicePhoneCleaner(deviceID, deviceSettings);
-            if (!isHidden)
-                Console.Title = $"Cleaner-{deviceID}";
-            //cleaner.Run();
         }
 
         private static void ExitAppIfAnotherProcessIsRunning(string deviceID)
