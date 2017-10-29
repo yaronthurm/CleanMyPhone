@@ -78,7 +78,7 @@ namespace CleanMyPhone
                 }
                 catch (OperationCanceledException)
                 {
-                    WriteToConsoleAndToLog("Operation has canceled");
+                    WriteToConsoleAndToLog("Operation was canceled");
                 }
                 catch (Exception ex)
                 {
