@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace CleanMyPhone
 {
@@ -16,9 +17,23 @@ namespace CleanMyPhone
     {
         private static Mutex singleInstanceMutex;
 
+        [STAThread]
         static void Main(string[] args)
         {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            var mainForm = new Main();
             var isHidden = args.Any(x => x == "-hidden");
+
+            if (isHidden)
+            {                                 
+                mainForm.WindowState = FormWindowState.Minimized;
+                mainForm.ShowInTaskbar = false;
+            }
+            Application.Run(mainForm);
+            return;
+
             if (!isHidden)
                 AllocConsole();
 
