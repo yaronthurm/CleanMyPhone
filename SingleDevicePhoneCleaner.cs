@@ -76,6 +76,10 @@ namespace CleanMyPhone
                     MarkEndTime();
                     TrySendSuccessRunEmail();
                 }
+                catch (OperationCanceledException)
+                {
+                    WriteToConsoleAndToLog("Operation has canceled");
+                }
                 catch (Exception ex)
                 {
                     MarkEndTime();
@@ -231,6 +235,7 @@ namespace CleanMyPhone
 
         private void WaitForIdleTimeToPass()
         {
+            if (_cancelToken.Token.IsCancellationRequested) return;
             WriteToConsoleAndToLog($"Waiting for idle time to pass: {_deviceSettings.IdleTimeBetweenRunsInSeconds}[sec]");
             Sleep(TimeSpan.FromSeconds(_deviceSettings.IdleTimeBetweenRunsInSeconds));
         }
