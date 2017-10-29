@@ -27,10 +27,8 @@ namespace CleanMyPhone
             var isHidden = args.Any(x => x == "-hidden");
 
             if (isHidden)
-            {                                 
                 mainForm.WindowState = FormWindowState.Minimized;
-                mainForm.ShowInTaskbar = false;
-            }
+
             Application.Run(mainForm);
             return;
 
@@ -84,7 +82,7 @@ namespace CleanMyPhone
             var cleaner = new SingleDevicePhoneCleaner(deviceID, deviceSettings);
             if (!isHidden)
                 Console.Title = $"Cleaner-{deviceID}";
-            cleaner.Run();
+            //cleaner.Run();
         }
 
         private static void ExitAppIfAnotherProcessIsRunning(string deviceID)

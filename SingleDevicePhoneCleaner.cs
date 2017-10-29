@@ -12,17 +12,21 @@ namespace CleanMyPhone
 {
     public class SingleDevicePhoneCleaner
     {
-        private string _deviceID;
+        public event Action<SingleDevicePhoneCleaner, string> NewLogLineAdded;
+
+        public string _deviceID;
         private CleanerSettings _deviceSettings;
 
         private string _logFilePath;
         private string _rollingLogPath;
-        private int _rollingLogLength; 
+        private int _rollingLogLength;
 
         private EmailSender _emailSender;
-        private SummaryData _summary;
+        private SummaryData _summary = new SummaryData();
         private IFileManager _sourceFileManager;
         private BasicFileInfo[] _sourceFiles;
+        private Thread _thread;
+        private CancellationTokenSource _cancelToken = new CancellationTokenSource();
         
 
         public SingleDevicePhoneCleaner(string deviceID, CleanerSettings deviceSettings)
@@ -31,9 +35,27 @@ namespace CleanMyPhone
             this._deviceSettings = deviceSettings;
         }
 
-        public void Run()
+        public void RunInBackground()
         {
-            while (true)
+            _thread = new Thread(Run);
+            _thread.IsBackground = true;
+            _thread.Start();
+        }
+
+        public void Cancel()
+        {
+            _cancelToken.Cancel();
+        }
+
+        public void WaitForIdle()
+        {
+            _thread.Join();
+        }
+
+
+        private void Run()
+        {
+            while (!_cancelToken.IsCancellationRequested)
             {
                 try
                 {
@@ -101,6 +123,7 @@ namespace CleanMyPhone
 
         private void InitializeSourceFilesList()
         {
+            _cancelToken.Token.ThrowIfCancellationRequested();
             WriteToConsoleAndToLog("Retrieving files from source");
             _sourceFiles = _sourceFileManager.ListFiles(_deviceSettings.SourceFolder).ToArray();
             var totalSizeMB = BytesToMegabytes(_sourceFiles.Select(x => x.SizeInBytes).Sum());
@@ -114,6 +137,7 @@ namespace CleanMyPhone
         {
             while (true)
             {
+                _cancelToken.Token.ThrowIfCancellationRequested();
                 WriteToRollingLog($"Searching for active servers");
                 var subnets = GetAllSubnets();
                 WriteToRollingLog($"Found subnets: '{string.Join(",", subnets)}'");
@@ -154,6 +178,8 @@ namespace CleanMyPhone
             var timeToWakeup = DateTime.Now.Add(timeSpan);
             while (DateTime.Now < timeToWakeup)
             {
+                if (_cancelToken.Token.IsCancellationRequested) return; 
+
                 var millisecondsLeft = (timeToWakeup - DateTime.Now).TotalMilliseconds;
                 var millisecondsToSleep = (int)Math.Min(1000, millisecondsLeft);
                 WriteToRollingLog($"Sleeping: {millisecondsToSleep}[ms]. Time till wakeup: {millisecondsLeft}[ms]");
@@ -163,20 +189,18 @@ namespace CleanMyPhone
 
         private List<string> FindActiveIPsInNetwork(string subnet, int port)
         {
+            var ips = Enumerable.Range(0, 255).Select(x => $"{subnet}.{x}");
+
             var bag = new ConcurrentBag<string>();
-            var threads = Enumerable.Range(0, 255)
-                .Select(x => $"{subnet}.{x}")
-                .Select(x => new Thread(() => {
-                    var tcpClient = new TcpClient();
-                    var connectTask = tcpClient.ConnectAsync(x, port);
-                    var timeoutTask = Task.Delay(200);
-                    var completedTaskIndex = Task.WaitAny(connectTask, timeoutTask);
-                    if (completedTaskIndex == 0)
-                        bag.Add(x);
-                }))
-                .ToList();
-            foreach (var thread in threads) thread.Start();
-            foreach (var thread in threads) thread.Join();
+            Parallel.ForEach(ips, ip => {
+                if (_cancelToken.IsCancellationRequested) return;
+                var tcpClient = new TcpClient();
+                var connectTask = tcpClient.ConnectAsync(ip, port);
+                var timeoutTask = Task.Delay(200);
+                var completedTaskIndex = Task.WaitAny(connectTask, timeoutTask);
+                if (completedTaskIndex == 0)
+                    bag.Add(ip);
+            });
 
             return bag.ToList();
         }
@@ -296,6 +320,7 @@ namespace CleanMyPhone
             var doneCount = 0;
             foreach (var file in filesToDelete)
             {
+                _cancelToken.Token.ThrowIfCancellationRequested();
                 WriteToConsoleAndToLog($"Deleting file {++doneCount}/{filesToDelete.Count}: {file.FullName}");
                 var fileSize = file.SizeInBytes;
                 _sourceFileManager.Delete(file);
@@ -321,6 +346,7 @@ namespace CleanMyPhone
                 Directory.CreateDirectory(tmpFolder);
                 foreach (var missingFile in missingFiles)
                 {
+                    _cancelToken.Token.ThrowIfCancellationRequested();
                     WriteToConsoleAndToLog($"Copying missing file {++doneCount}/{missingFiles.Length}: {missingFile.Name}");
                     var tmpPath = Path.Combine(tmpFolder, missingFile.Name);
                     _sourceFileManager.CopyWithTimestamps(missingFile, tmpPath);
@@ -419,6 +445,7 @@ namespace CleanMyPhone
             var textWithTime = $"[{DateTime.Now}]  {text}";
             File.AppendAllText(_rollingLogPath, textWithTime + Environment.NewLine);
             _rollingLogLength++;
+            this.NewLogLineAdded?.Invoke(this, textWithTime);
         }
     }
 
