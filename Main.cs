@@ -63,8 +63,16 @@ namespace CleanMyPhone
 
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            this.Visible = !this.Visible;
-            this.ShowInTaskbar = !this.ShowInTaskbar;
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.ShowInTaskbar = true;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+            }
         }
 
         private static string GetAppFolder()
@@ -146,6 +154,14 @@ namespace CleanMyPhone
         {
             await Task.Delay(1500);
             _autoScroll = true;
+        }
+
+        
+
+        private void Main_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+                this.ShowInTaskbar = false;
         }
     }
 }

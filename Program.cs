@@ -25,10 +25,11 @@ namespace CleanMyPhone
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            var isHidden = args.Any(x => x == "-hidden");
             var mainForm = new Main();
-            if (args.Any(x => x == "-hidden"))
+            if (isHidden)
             {
-                mainForm.Visible = false;
+                mainForm.WindowState = FormWindowState.Minimized;
                 mainForm.ShowInTaskbar = false;
             }
 

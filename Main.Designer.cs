@@ -87,12 +87,12 @@
             this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.comboBox1);
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Main";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
+            this.Resize += new System.EventHandler(this.Main_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
