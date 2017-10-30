@@ -75,6 +75,8 @@
             this.textBox1.Size = new System.Drawing.Size(370, 491);
             this.textBox1.TabIndex = 11;
             this.textBox1.WordWrap = false;
+            this.textBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.textBox1_MouseDown);
+            this.textBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.textBox1_MouseUp);
             // 
             // Main
             // 
