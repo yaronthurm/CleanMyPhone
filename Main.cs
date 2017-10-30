@@ -62,10 +62,7 @@ namespace CleanMyPhone
 
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            if (this.WindowState == FormWindowState.Normal)
-                this.WindowState = FormWindowState.Minimized;
-            else
-                this.WindowState = FormWindowState.Normal;
+            this.Visible = !this.Visible;
         }
 
         private static string GetAppFolder()

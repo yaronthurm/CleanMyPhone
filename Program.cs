@@ -26,10 +26,8 @@ namespace CleanMyPhone
             Application.SetCompatibleTextRenderingDefault(false);
 
             var mainForm = new Main();
-            var isHidden = args.Any(x => x == "-hidden");
-
-            if (isHidden)
-                mainForm.WindowState = FormWindowState.Minimized;
+            if (args.Any(x => x == "-hidden"))
+                mainForm.Visible = false; 
 
             Application.Run(mainForm);
         }
