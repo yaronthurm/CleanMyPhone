@@ -27,7 +27,10 @@ namespace CleanMyPhone
 
             var mainForm = new Main();
             if (args.Any(x => x == "-hidden"))
-                mainForm.Visible = false; 
+            {
+                mainForm.Visible = false;
+                mainForm.ShowInTaskbar = false;
+            }
 
             Application.Run(mainForm);
         }

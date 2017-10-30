@@ -63,6 +63,7 @@ namespace CleanMyPhone
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
             this.Visible = !this.Visible;
+            this.ShowInTaskbar = !this.ShowInTaskbar;
         }
 
         private static string GetAppFolder()
