@@ -95,7 +95,7 @@ namespace CleanMyPhone
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var checkBox = new CheckBox() { Checked = bool.Parse(value), Text = value };
+                    var checkBox = new CheckBox() { Checked = bool.Parse(value)};
                     checkBox.CheckedChanged += (s1, e1) =>
                     {
                         (s1 as CheckBox).Text = (s1 as CheckBox).Checked.ToString();
@@ -120,6 +120,7 @@ namespace CleanMyPhone
                 valueCtrl.Text = value;
                 
                 this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
+                EnableDisableSaveChangesButton();
             }
 
             UpdateRollingLogBasedOnSelectedDevice();
