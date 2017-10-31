@@ -88,6 +88,7 @@ namespace CleanMyPhone
                     numeric.ValueChanged += (s1, e1) =>
                     {
                         (s1 as NumericUpDown).Text = (s1 as NumericUpDown).Value.ToString();
+                        prop.SetValue(selectedDeviceSettings, (int)(s1 as NumericUpDown).Value);
                         EnableDisableSaveChangesButton();
                     };
                     valueCtrl = numeric;
@@ -98,18 +99,26 @@ namespace CleanMyPhone
                     checkBox.CheckedChanged += (s1, e1) =>
                     {
                         (s1 as CheckBox).Text = (s1 as CheckBox).Checked.ToString();
+                        prop.SetValue(selectedDeviceSettings, (s1 as CheckBox).Checked);
                         EnableDisableSaveChangesButton();
                     };
                     valueCtrl = checkBox;
                 }
-                else
-                    valueCtrl = new TextBox();
+                else {
+                    var txtBox = new TextBox();
+                    txtBox.TextChanged += (s1, e1) =>
+                    {
+                        prop.SetValue(selectedDeviceSettings, (s1 as TextBox).Text);
+                        EnableDisableSaveChangesButton();
+                    };
+                    valueCtrl = txtBox;
+                }
 
                 valueCtrl.Margin = new Padding(0, 0, 0, 8);
                 valueCtrl.Width = this.panelSettings.Width - 30;
                 valueCtrl.Tag = value;
                 valueCtrl.Text = value;
-                valueCtrl.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();
+                
                 this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
             }
 
@@ -194,7 +203,11 @@ namespace CleanMyPhone
 
         private void btnSaveChanges_Click(object sender, EventArgs e)
         {
-
+            _configs[_selectedDeviceID].Save();
+            foreach (Control ctrl in this.panelSettings.Controls)
+                if (ctrl.Tag != null)
+                    ctrl.Tag = ctrl.Text;
+            EnableDisableSaveChangesButton();
         }
     }
 }

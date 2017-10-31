@@ -48,7 +48,6 @@ namespace CleanMyPhone
 
         public void Save()
         {
-            var tmpSettingsFile = Path.GetTempFileName();
             File.WriteAllLines(this.SettingsFile, new[] {
                 $"port = {this.Port}",
                 $"username = {this.Username}",
