@@ -221,10 +221,10 @@ namespace CleanMyPhone
 
         private void PrintConfigValues()
         {
-            WriteToConsoleAndToLog($"Loaded configuration from: {_deviceSettings.SettingsFile}");
+            WriteToConsoleAndToLog($"Loaded configuration from: {_deviceSettings.GetSettingsFile()}");
             WriteToConsoleAndToLog($"\tSourceFolder: {_deviceSettings.SourceFolder}");
             WriteToConsoleAndToLog($"\tDestinationFolder: {_deviceSettings.DestinationFolder}");
-            WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.DeviceFolder}");
+            WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.GetDeviceFolder()}");
             WriteToConsoleAndToLog($"\tEnableDeleting: {_deviceSettings.EnableDeleting}");
             if (_deviceSettings.EnableDeleting)
             {
@@ -285,7 +285,7 @@ namespace CleanMyPhone
         private void InitializeEmailSender()
         {
             _summary = new SummaryData();
-            var smtpConfigPath = Path.Combine(_deviceSettings.DeviceFolder, "smtp.txt");
+            var smtpConfigPath = Path.Combine(_deviceSettings.GetDeviceFolder(), "smtp.txt");
             if (!File.Exists(smtpConfigPath))
                 return;
             else
@@ -294,7 +294,7 @@ namespace CleanMyPhone
 
         private void CreateLogFile()
         {
-            var logFolder = Path.Combine(_deviceSettings.DeviceFolder, "Logs");
+            var logFolder = Path.Combine(_deviceSettings.GetDeviceFolder(), "Logs");
             var logName = DateTime.Now.ToString("yyyy_MM_dd  HH_mm_ss") + ".log";
             var ret = Path.Combine(logFolder, logName);
             if (!Directory.Exists(logFolder))
@@ -303,14 +303,14 @@ namespace CleanMyPhone
 
             _logFilePath = ret;
 
-            _rollingLogPath = Path.Combine(_deviceSettings.DeviceFolder, "Logs", "rolling.log");
+            _rollingLogPath = Path.Combine(_deviceSettings.GetDeviceFolder(), "Logs", "rolling.log");
             if (!File.Exists(_rollingLogPath))
                 File.WriteAllText(_rollingLogPath, "");
         }
 
         private List<string> GetExcludeList()
         {
-            var filename = Path.Combine(_deviceSettings.DeviceFolder, "ExcludeFromCleanup.txt");
+            var filename = Path.Combine(_deviceSettings.GetDeviceFolder(), "ExcludeFromCleanup.txt");
             if (!File.Exists(filename))
                 return new List<string>();
             var ret = File.ReadAllLines(filename)

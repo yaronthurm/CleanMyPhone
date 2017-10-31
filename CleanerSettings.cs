@@ -15,10 +15,13 @@ namespace CleanMyPhone
         public int HighMbThreshold { get; private set; }
         public int LowMbThreshold { get; private set; }
         public int IdleTimeBetweenRunsInSeconds { get; private set; }
-        public string SettingsFile { get; private set; }
-        public string DeviceFolder { get; private set; }
         public bool EnableDeleting { get; private set; }
 
+        private string SettingsFile { get; set; }
+        private string DeviceFolder { get; set; }
+
+        public string GetSettingsFile() => this.SettingsFile;
+        public string GetDeviceFolder() => this.DeviceFolder;
 
         public static CleanerSettings LoadFromFile(string filename)
         {

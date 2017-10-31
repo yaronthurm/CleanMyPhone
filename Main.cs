@@ -81,12 +81,22 @@ namespace CleanMyPhone
                 var value = prop.GetValue(selectedDeviceSettings).ToString();
                 var label = new Label() { Text = name, Margin = new Padding(0), Height = 15, BackColor = Color.LightBlue, Width = this.panelSettings.Width - 30 };
 
-                Control valueCtrl = null;
+                Control valueCtrl;
                 if (prop.PropertyType == typeof(int))
-                    valueCtrl = new NumericUpDown() { Minimum = int.MinValue, Maximum = int.MaxValue };
-                else if (prop.PropertyType == typeof(bool)) {
+                {
+                    var numeric = new NumericUpDown() { Minimum = int.MinValue, Maximum = int.MaxValue };
+                    numeric.ValueChanged += (s1, e1) =>
+                    {
+                        (s1 as NumericUpDown).Text = (s1 as NumericUpDown).Value.ToString();
+                        EnableDisableSaveChangesButton();
+                    };
+                    valueCtrl = numeric;
+                }
+                else if (prop.PropertyType == typeof(bool))
+                {
                     var checkBox = new CheckBox() { Checked = bool.Parse(value), Text = value };
-                    checkBox.CheckedChanged += (s1, e1) => {
+                    checkBox.CheckedChanged += (s1, e1) =>
+                    {
                         (s1 as CheckBox).Text = (s1 as CheckBox).Checked.ToString();
                         EnableDisableSaveChangesButton();
                     };
@@ -94,6 +104,7 @@ namespace CleanMyPhone
                 }
                 else
                     valueCtrl = new TextBox();
+
                 valueCtrl.Margin = new Padding(0, 0, 0, 8);
                 valueCtrl.Width = this.panelSettings.Width - 30;
                 valueCtrl.Tag = value;
