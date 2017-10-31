@@ -67,6 +67,7 @@ namespace CleanMyPhone
                 {
                     CreateLogFile();
                     PrintConfigValues();
+                    Sleep(TimeSpan.FromDays(1));
                     WaitForSourceToBeAvailable();
                     InitializeEmailSender();
 
@@ -191,7 +192,7 @@ namespace CleanMyPhone
                 if (_cancelToken.Token.IsCancellationRequested) return; 
 
                 var millisecondsLeft = (timeToWakeup - DateTime.Now).TotalMilliseconds;
-                var millisecondsToSleep = (int)Math.Min(1000, millisecondsLeft);
+                var millisecondsToSleep = (int)Math.Min(100, millisecondsLeft);
                 WriteToRollingLog($"Sleeping: {millisecondsToSleep}[ms]. Time till wakeup: {millisecondsLeft}[ms]");
                 Thread.Sleep(millisecondsToSleep);
             }

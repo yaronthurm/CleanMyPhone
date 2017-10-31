@@ -35,6 +35,7 @@
             this.panelSettings = new System.Windows.Forms.FlowLayoutPanel();
             this.txtRollingLog = new System.Windows.Forms.TextBox();
             this.btnSaveChanges = new System.Windows.Forms.Button();
+            this.chkAutoScroll = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // _notifyIcon
@@ -77,8 +78,6 @@
             this.txtRollingLog.Size = new System.Drawing.Size(370, 336);
             this.txtRollingLog.TabIndex = 11;
             this.txtRollingLog.WordWrap = false;
-            this.txtRollingLog.MouseDown += new System.Windows.Forms.MouseEventHandler(this.txtRollingLog_MouseDown);
-            this.txtRollingLog.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtRollingLog_MouseUp);
             // 
             // btnSaveChanges
             // 
@@ -91,11 +90,24 @@
             this.btnSaveChanges.UseVisualStyleBackColor = true;
             this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
             // 
+            // chkAutoScroll
+            // 
+            this.chkAutoScroll.AutoSize = true;
+            this.chkAutoScroll.Checked = true;
+            this.chkAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAutoScroll.Location = new System.Drawing.Point(703, 30);
+            this.chkAutoScroll.Name = "chkAutoScroll";
+            this.chkAutoScroll.Size = new System.Drawing.Size(75, 17);
+            this.chkAutoScroll.TabIndex = 13;
+            this.chkAutoScroll.Text = "Auto scroll";
+            this.chkAutoScroll.UseVisualStyleBackColor = true;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(806, 459);
+            this.Controls.Add(this.chkAutoScroll);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.txtRollingLog);
             this.Controls.Add(this.panelSettings);
@@ -120,5 +132,6 @@
         private System.Windows.Forms.FlowLayoutPanel panelSettings;
         private System.Windows.Forms.TextBox txtRollingLog;
         private System.Windows.Forms.Button btnSaveChanges;
+        private System.Windows.Forms.CheckBox chkAutoScroll;
     }
 }

@@ -18,7 +18,6 @@ namespace CleanMyPhone
         private List<SingleDevicePhoneCleaner> _cleaners = new List<SingleDevicePhoneCleaner>();
         private Dictionary<SingleDevicePhoneCleaner, List<string>> _logs = new Dictionary<SingleDevicePhoneCleaner, List<string>>();
         private string _selectedDeviceID;
-        private bool _autoScroll = true;
 
         public Main()
         {
@@ -155,15 +154,16 @@ namespace CleanMyPhone
         private void UpdateRollingLogBasedOnSelectedDevice()
         {
             var selectedDeviceCleaner = _cleaners.First(x => x.DeviceID == _selectedDeviceID);
-            if (_autoScroll) { 
+            if (this.chkAutoScroll.Checked)
+            {
                 this.txtRollingLog.Lines = _logs[selectedDeviceCleaner].ToArray();
-                var indexOf = this.txtRollingLog.Lines.Any()?this.txtRollingLog.Text.IndexOf(this.txtRollingLog.Lines.Last()): 0;
+            
+                var indexOf = this.txtRollingLog.Lines.Any() ? this.txtRollingLog.Text.IndexOf(this.txtRollingLog.Lines.Last()) : 0;
                 this.txtRollingLog.SelectionStart = indexOf;
                 this.txtRollingLog.SelectionLength = 0;
                 this.txtRollingLog.ScrollToCaret();
             }
-        }        
-
+        }    
 
         private async void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -186,19 +186,6 @@ namespace CleanMyPhone
             Thread.Sleep(1000);
             Environment.Exit(0);
         }
-
-        private void txtRollingLog_MouseDown(object sender, MouseEventArgs e)
-        {
-            _autoScroll = false;
-        }
-
-        private async void txtRollingLog_MouseUp(object sender, MouseEventArgs e)
-        {
-            await Task.Delay(1500);
-            _autoScroll = true;
-        }
-
-        
 
         private void Main_Resize(object sender, EventArgs e)
         {
