@@ -31,9 +31,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this._notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.cmbDevices = new System.Windows.Forms.ComboBox();
+            this.panelSettings = new System.Windows.Forms.FlowLayoutPanel();
+            this.txtRollingLog = new System.Windows.Forms.TextBox();
+            this.btnSaveChanges = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // _notifyIcon
@@ -43,50 +44,62 @@
             this._notifyIcon.Visible = true;
             this._notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
             // 
-            // comboBox1
+            // cmbDevices
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(12, 12);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(347, 21);
-            this.comboBox1.TabIndex = 0;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.cmbDevices.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbDevices.FormattingEnabled = true;
+            this.cmbDevices.Location = new System.Drawing.Point(12, 12);
+            this.cmbDevices.Name = "cmbDevices";
+            this.cmbDevices.Size = new System.Drawing.Size(347, 21);
+            this.cmbDevices.TabIndex = 0;
+            this.cmbDevices.SelectedIndexChanged += new System.EventHandler(this.cmbDevices_SelectedIndexChanged);
             // 
-            // flowLayoutPanel1
+            // panelSettings
             // 
-            this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panelSettings.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 53);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(347, 491);
-            this.flowLayoutPanel1.TabIndex = 10;
-            this.flowLayoutPanel1.Resize += new System.EventHandler(this.flowLayoutPanel1_Resize);
+            this.panelSettings.AutoScroll = true;
+            this.panelSettings.Location = new System.Drawing.Point(12, 53);
+            this.panelSettings.Name = "panelSettings";
+            this.panelSettings.Size = new System.Drawing.Size(347, 336);
+            this.panelSettings.TabIndex = 10;
             // 
-            // textBox1
+            // txtRollingLog
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.txtRollingLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(413, 53);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox1.Size = new System.Drawing.Size(370, 491);
-            this.textBox1.TabIndex = 11;
-            this.textBox1.WordWrap = false;
-            this.textBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.textBox1_MouseDown);
-            this.textBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.textBox1_MouseUp);
+            this.txtRollingLog.Location = new System.Drawing.Point(413, 53);
+            this.txtRollingLog.Multiline = true;
+            this.txtRollingLog.Name = "txtRollingLog";
+            this.txtRollingLog.ReadOnly = true;
+            this.txtRollingLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtRollingLog.Size = new System.Drawing.Size(370, 336);
+            this.txtRollingLog.TabIndex = 11;
+            this.txtRollingLog.WordWrap = false;
+            this.txtRollingLog.MouseDown += new System.Windows.Forms.MouseEventHandler(this.txtRollingLog_MouseDown);
+            this.txtRollingLog.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtRollingLog_MouseUp);
+            // 
+            // btnSaveChanges
+            // 
+            this.btnSaveChanges.Enabled = false;
+            this.btnSaveChanges.Location = new System.Drawing.Point(12, 416);
+            this.btnSaveChanges.Name = "btnSaveChanges";
+            this.btnSaveChanges.Size = new System.Drawing.Size(90, 23);
+            this.btnSaveChanges.TabIndex = 12;
+            this.btnSaveChanges.Text = "Save changes";
+            this.btnSaveChanges.UseVisualStyleBackColor = true;
+            this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(806, 618);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.flowLayoutPanel1);
-            this.Controls.Add(this.comboBox1);
+            this.ClientSize = new System.Drawing.Size(806, 459);
+            this.Controls.Add(this.btnSaveChanges);
+            this.Controls.Add(this.txtRollingLog);
+            this.Controls.Add(this.panelSettings);
+            this.Controls.Add(this.cmbDevices);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Main";
@@ -103,8 +116,9 @@
         #endregion
 
         private System.Windows.Forms.NotifyIcon _notifyIcon;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ComboBox cmbDevices;
+        private System.Windows.Forms.FlowLayoutPanel panelSettings;
+        private System.Windows.Forms.TextBox txtRollingLog;
+        private System.Windows.Forms.Button btnSaveChanges;
     }
 }

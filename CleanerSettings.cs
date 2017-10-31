@@ -43,6 +43,21 @@ namespace CleanMyPhone
             return ret;
         }
 
+        public void Save()
+        {
+            var tmpSettingsFile = Path.GetTempFileName();
+            File.WriteAllLines(this.SettingsFile, new[] {
+                $"port = {this.Port}",
+                $"username = {this.Username}",
+                $"password = {this.Password}",
+                $"source-folder = {this.SourceFolder}",
+                $"destination-folder = {this.DestinationFolder}",
+                $"enable-deleting = {this.EnableDeleting}",
+                $"high-mb-threshold = {this.HighMbThreshold}",
+                $"low-mb-threshold = {this.LowMbThreshold}",
+                $"idle-time-between-runs-in-seconds = {this.IdleTimeBetweenRunsInSeconds}",
+                });
+        }
 
         public static Dictionary<string, CleanerSettings> GetAllConfigs(string appFolder)
         {
