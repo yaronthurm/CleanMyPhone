@@ -202,13 +202,24 @@ namespace CleanMyPhone
             }
         }
 
-        private void btnSaveChanges_Click(object sender, EventArgs e)
+        private async void btnSaveChanges_Click(object sender, EventArgs e)
         {
             _configs[_selectedDeviceID].Save();
             foreach (Control ctrl in this.panelSettings.Controls)
                 if (ctrl.Tag != null)
                     ctrl.Tag = ctrl.Text;
             EnableDisableSaveChangesButton();
+            var cleaner = _cleaners.First(x => x._deviceID == _selectedDeviceID);
+            cleaner.Cancel();
+            await cleaner.WaitForIdleAsync();
+            _cleaners.Remove(cleaner);
+            _logs.Remove(cleaner);
+            cleaner = new SingleDevicePhoneCleaner(_selectedDeviceID, _configs[_selectedDeviceID]);
+            _logs[cleaner] = new List<string>();
+            cleaner.NewLogLineAdded += HandleNewLogLine;
+            cleaner.RunInBackground();
+            _cleaners.Add(cleaner);
+
         }
     }
 }

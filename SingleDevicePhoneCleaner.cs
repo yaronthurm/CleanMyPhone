@@ -52,6 +52,11 @@ namespace CleanMyPhone
             _thread.Join();
         }
 
+        public Task WaitForIdleAsync()
+        {
+            return Task.Run(() => _thread.Join());
+        }
+
 
         private void Run()
         {
@@ -222,6 +227,7 @@ namespace CleanMyPhone
         private void PrintConfigValues()
         {
             WriteToConsoleAndToLog($"Loaded configuration from: {_deviceSettings.GetSettingsFile()}");
+            WriteToConsoleAndToLog($"\tPort: {_deviceSettings.Port}");
             WriteToConsoleAndToLog($"\tSourceFolder: {_deviceSettings.SourceFolder}");
             WriteToConsoleAndToLog($"\tDestinationFolder: {_deviceSettings.DestinationFolder}");
             WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.GetDeviceFolder()}");
