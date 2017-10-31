@@ -14,7 +14,7 @@ namespace CleanMyPhone
 {
     public partial class Main : Form
     {
-        private Dictionary<string, CleanerSettings> _configs;
+        private Dictionary<string, CleanerSettings> _settingsByDeviceID;
         private List<SingleDevicePhoneCleaner> _cleaners = new List<SingleDevicePhoneCleaner>();
         private Dictionary<SingleDevicePhoneCleaner, List<string>> _logs = new Dictionary<SingleDevicePhoneCleaner, List<string>>();
         private string _selectedDeviceID;
@@ -27,20 +27,38 @@ namespace CleanMyPhone
             _notifyIcon.Icon = this.Icon;
         }
 
-        private void Main_Load(object sender, EventArgs e)
+        private async void Main_Load(object sender, EventArgs e)
         {
-            _configs = CleanerSettings.GetAllConfigs(GetAppFolder());
-            foreach (var config in _configs)
+            _settingsByDeviceID = CleanerSettings.GetAllConfigs(GetAppFolder());
+            foreach (var settings in _settingsByDeviceID)
             {
-                this.cmbDevices.Items.Add(config.Key);
-                var cleaner = new SingleDevicePhoneCleaner(config.Key, config.Value);
-                _logs[cleaner] = new List<string>();
-                cleaner.NewLogLineAdded += HandleNewLogLine;
-                cleaner.RunInBackground();
-                _cleaners.Add(cleaner);
+                await AddOrUpdateCleaner(settings.Key, settings.Value);
             }
-            if (_configs.Keys.Count > 0)
+            if (_settingsByDeviceID.Keys.Count > 0)
                 this.cmbDevices.SelectedIndex = 0;
+        }
+
+        private async Task AddOrUpdateCleaner(string deviceID, CleanerSettings settings)
+        {
+            // Add to combo box
+            if (!this.cmbDevices.Items.OfType<string>().Any(x => x == deviceID))
+                this.cmbDevices.Items.Add(deviceID);
+
+            // Remove from memory if exists
+            var existingCleaner = _cleaners.FirstOrDefault(x => x.DeviceID == deviceID);
+            if (existingCleaner != null)
+            {
+                existingCleaner.Cancel();
+                await existingCleaner.WaitForIdleAsync();
+                _cleaners.Remove(existingCleaner);
+                _logs.Remove(existingCleaner);
+            }
+
+            var newCleaner = new SingleDevicePhoneCleaner(deviceID, settings);
+            _cleaners.Add(newCleaner);
+            _logs[newCleaner] = new List<string>();
+            newCleaner.NewLogLineAdded += HandleNewLogLine;
+            newCleaner.RunInBackground();
         }
 
         private void HandleNewLogLine(SingleDevicePhoneCleaner sender, string line)
@@ -73,7 +91,7 @@ namespace CleanMyPhone
         {
             _selectedDeviceID = this.cmbDevices.SelectedItem.ToString();
 
-            var selectedDeviceSettings = _configs[_selectedDeviceID];
+            var selectedDeviceSettings = _settingsByDeviceID[_selectedDeviceID];
             this.panelSettings.Controls.Clear();
             foreach (var prop in typeof(CleanerSettings).GetProperties())
             {
@@ -128,7 +146,7 @@ namespace CleanMyPhone
 
         private void EnableDisableSaveChangesButton()
         {
-            var selectedDeviceSettings = _configs[_selectedDeviceID];
+            var selectedDeviceSettings = _settingsByDeviceID[_selectedDeviceID];
             this.btnSaveChanges.Enabled = this.panelSettings.Controls.OfType<Control>()
                 .Where(x => x.Tag != null)
                 .Any(x =>  x.Tag.ToString() != x.Text.Trim());
@@ -136,7 +154,7 @@ namespace CleanMyPhone
 
         private void UpdateRollingLogBasedOnSelectedDevice()
         {
-            var selectedDeviceCleaner = _cleaners.First(x => x._deviceID == _selectedDeviceID);
+            var selectedDeviceCleaner = _cleaners.First(x => x.DeviceID == _selectedDeviceID);
             if (_autoScroll) { 
                 this.txtRollingLog.Lines = _logs[selectedDeviceCleaner].ToArray();
                 var indexOf = this.txtRollingLog.Lines.Any()?this.txtRollingLog.Text.IndexOf(this.txtRollingLog.Lines.Last()): 0;
@@ -204,22 +222,12 @@ namespace CleanMyPhone
 
         private async void btnSaveChanges_Click(object sender, EventArgs e)
         {
-            _configs[_selectedDeviceID].Save();
+            _settingsByDeviceID[_selectedDeviceID].Save();
             foreach (Control ctrl in this.panelSettings.Controls)
                 if (ctrl.Tag != null)
                     ctrl.Tag = ctrl.Text;
             EnableDisableSaveChangesButton();
-            var cleaner = _cleaners.First(x => x._deviceID == _selectedDeviceID);
-            cleaner.Cancel();
-            await cleaner.WaitForIdleAsync();
-            _cleaners.Remove(cleaner);
-            _logs.Remove(cleaner);
-            cleaner = new SingleDevicePhoneCleaner(_selectedDeviceID, _configs[_selectedDeviceID]);
-            _logs[cleaner] = new List<string>();
-            cleaner.NewLogLineAdded += HandleNewLogLine;
-            cleaner.RunInBackground();
-            _cleaners.Add(cleaner);
-
+            await AddOrUpdateCleaner(_selectedDeviceID, _settingsByDeviceID[_selectedDeviceID]);
         }
     }
 }

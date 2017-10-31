@@ -14,7 +14,8 @@ namespace CleanMyPhone
     {
         public event Action<SingleDevicePhoneCleaner, string> NewLogLineAdded;
 
-        public string _deviceID;
+        public string DeviceID { get; private set; }
+
         private CleanerSettings _deviceSettings;
 
         private string _logFilePath;
@@ -31,7 +32,7 @@ namespace CleanMyPhone
 
         public SingleDevicePhoneCleaner(string deviceID, CleanerSettings deviceSettings)
         {
-            this._deviceID = deviceID;
+            this.DeviceID = deviceID;
             this._deviceSettings = deviceSettings;
         }
 
@@ -161,15 +162,15 @@ namespace CleanMyPhone
                         WriteToRollingLog($"Found guid file on server '{ip}'");
                         var content = client.GetFileContentAsString(guidFileName);
                         var deviceGuid = DeviceGuid.LoadFromContent(content);
-                        WriteToRollingLog($"guid file on server '{ip}' contains the following content: {deviceGuid.ID}, expected value: {_deviceID}");
-                        if (deviceGuid.ID == _deviceID)
+                        WriteToRollingLog($"guid file on server '{ip}' contains the following content: {deviceGuid.ID}, expected value: {DeviceID}");
+                        if (deviceGuid.ID == DeviceID)
                         {
-                            WriteToRollingLog($"Found match for deviceID '{_deviceID}' on server '{ip}'");
+                            WriteToRollingLog($"Found match for deviceID '{DeviceID}' on server '{ip}'");
                             return ip;
                         }
                         else
                         {
-                            WriteToRollingLog($"Did not find match for deviceID '{_deviceID}' on server '{ip}'");
+                            WriteToRollingLog($"Did not find match for deviceID '{DeviceID}' on server '{ip}'");
                         }
                     }
                     else

@@ -25,20 +25,14 @@ namespace CleanMyPhone
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var isHidden = args.Any(x => x == "-hidden");
             var mainForm = new Main();
-            if (isHidden)
+            if (args.Any(x => x == "-hidden"))
             {
                 mainForm.WindowState = FormWindowState.Minimized;
                 mainForm.ShowInTaskbar = false;
             }
 
             Application.Run(mainForm);
-        }
-
-        private static void StartSetupFlow(string appFolder)
-        {
-            DeviceSetup.ReadFromConsoleAndSetupDevice(appFolder);
         }
 
         private static void ExitAppIfAnotherProcessIsRunning(string deviceID)
@@ -59,52 +53,5 @@ namespace CleanMyPhone
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
-    }
-
-
-
-    public class MultipleDevicesCleaner
-    {
-        private List<Process> _devicesProcesses = new List<Process>();
-        private Dictionary<string, CleanerSettings> _devicesSettings;
-        private string _appFolder;
-        private bool _isHidden;
-
-        public MultipleDevicesCleaner(string appFolder, bool isHidden)
-        {
-            _appFolder = appFolder;
-            _isHidden = isHidden;
-        }
-
-        public void Run()
-        {
-            LoadConfig();
-            DispatchProcessForEachDevice();
-            WaitForAllProcessedToFinish();
-        }
-
-        private void WaitForAllProcessedToFinish()
-        {
-            Console.WriteLine($"Waiting for dispathed processed to exit");
-            foreach (var process in _devicesProcesses)
-                process.WaitForExit();
-        }
-
-        private void LoadConfig()
-        {
-            _devicesSettings = CleanerSettings.GetAllConfigs(_appFolder);
-        }
-
-        private void DispatchProcessForEachDevice()
-        {
-            var exeFile = Assembly.GetEntryAssembly().Location;
-            foreach (var deviceID in _devicesSettings.Keys)
-            {
-                var arguments = _isHidden ? $"-deviceID={deviceID} -hidden" : $"-deviceID={deviceID}";
-                Process process  = Process.Start(exeFile, arguments);
-                _devicesProcesses.Add(process);
-                Console.WriteLine($"Dispathed process for device '{deviceID}': {exeFile} {arguments}");
-            }
-        }
     }
 }
