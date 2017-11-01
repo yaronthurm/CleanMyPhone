@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -154,15 +155,7 @@ namespace CleanMyPhone
         private void UpdateRollingLogBasedOnSelectedDevice()
         {
             var selectedDeviceCleaner = _cleaners.First(x => x.DeviceID == _selectedDeviceID);
-            if (this.chkAutoScroll.Checked)
-            {
-                this.txtRollingLog.Lines = _logs[selectedDeviceCleaner].ToArray();
-            
-                var indexOf = this.txtRollingLog.Lines.Any() ? this.txtRollingLog.Text.IndexOf(this.txtRollingLog.Lines.Last()) : 0;
-                this.txtRollingLog.SelectionStart = indexOf;
-                this.txtRollingLog.SelectionLength = 0;
-                this.txtRollingLog.ScrollToCaret();
-            }
+            AppendTextToTextBox(this.txtRollingLog, _logs[selectedDeviceCleaner], this.chkAutoScroll.Checked);
         }    
 
         private async void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -215,6 +208,45 @@ namespace CleanMyPhone
                     ctrl.Tag = ctrl.Text;
             EnableDisableSaveChangesButton();
             await AddOrUpdateCleaner(_selectedDeviceID, _settingsByDeviceID[_selectedDeviceID]);
+        }
+
+
+
+        private const int SB_HOR = 0x0;
+        private const int SB_VERT = 0x1;
+        private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL = 0x115;
+        private const int SB_THUMBPOSITION = 0x4;
+        private const int SB_BOTTOM = 0x7;
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetScrollPos(IntPtr hWnd, int nBar);
+        [DllImport("user32.dll")]
+        private static extern int SetScrollPos(IntPtr hWnd, int nBar, int nPos, bool bRedraw);
+        [DllImport("user32.dll")]
+        private static extern bool PostMessageA(IntPtr hWnd, int nBar, int wParam, int lParam);
+        [DllImport("user32.dll")]
+        public static extern bool LockWindowUpdate(IntPtr hWndLock);
+
+        private static void AppendTextToTextBox(TextBox textbox, List<string> lines, bool autoscroll)
+        {
+            int savedVpos = GetScrollPos(textbox.Handle, SB_VERT);
+            int savedHpos = GetScrollPos(textbox.Handle, SB_HOR);
+            int savedSelectionStart = textbox.SelectionStart;
+            int savedSelectionLenght = textbox.SelectionLength;
+            textbox.Lines = lines.ToArray();
+            textbox.SelectionStart = savedSelectionStart;
+            textbox.SelectionLength = savedSelectionLenght;
+            if (autoscroll)
+            {
+                PostMessageA(textbox.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+            }
+            else
+            {
+                SetScrollPos(textbox.Handle, SB_VERT, savedVpos, true);
+                SetScrollPos(textbox.Handle, SB_HOR, savedHpos, true);
+                PostMessageA(textbox.Handle, WM_VSCROLL, SB_THUMBPOSITION + 0x10000 * savedVpos, 0);
+                PostMessageA(textbox.Handle, WM_HSCROLL, SB_THUMBPOSITION + 0x10000 * savedHpos, 0);
+            }
         }
     }
 }
