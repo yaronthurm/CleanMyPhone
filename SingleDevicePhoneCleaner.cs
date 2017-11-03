@@ -28,7 +28,7 @@ namespace CleanMyPhone
         private BasicFileInfo[] _sourceFiles;
         private Thread _thread;
         private CancellationTokenSource _cancelToken = new CancellationTokenSource();
-        
+        private string _fileActivityArchive;
 
         public SingleDevicePhoneCleaner(string deviceID, CleanerSettings deviceSettings)
         {
@@ -319,13 +319,10 @@ namespace CleanMyPhone
             var ret = Path.Combine(logFolder, logName);
             if (!Directory.Exists(logFolder))
                 Directory.CreateDirectory(logFolder);
-            File.WriteAllText(ret, "");
 
             _logFilePath = ret;
-
             _rollingLogPath = Path.Combine(_deviceSettings.GetDeviceFolder(), "Logs", "rolling.log");
-            if (!File.Exists(_rollingLogPath))
-                File.WriteAllText(_rollingLogPath, "");
+            _fileActivityArchive = Path.Combine(_deviceSettings.GetDeviceFolder(), "FilesActivity.txt");
         }
 
         private List<string> GetExcludeList()
@@ -350,6 +347,7 @@ namespace CleanMyPhone
                 var fileSize = file.SizeInBytes;
                 _sourceFileManager.Delete(file);
 
+                RecordDeletedFileToFileActivityArchive(file.Name, Path.Combine(_deviceSettings.DestinationFolder, file.Name));
                 _summary.TotalMbDeleted += BytesToMegabytes(fileSize);
                 _summary.TotalFilesDeleted++;
             }
@@ -386,6 +384,7 @@ namespace CleanMyPhone
                         File.SetLastAccessTimeUtc(destinationPath, tmpFile.LastAccessTimeUtc);
                         File.SetLastWriteTimeUtc(destinationPath, tmpFile.LastWriteTimeUtc);
                         _summary.TotalMissingFilesCopied++;
+                        RecordCopiedFileToFileActivityArchive(missingFile.Name, Path.Combine(_deviceSettings.DestinationFolder, destinationPath));
                     }
                 }
                 Directory.Delete(tmpFolder);
@@ -445,6 +444,32 @@ namespace CleanMyPhone
                     sourceFiles[i] = tmp;
                 }
             }
+        }
+
+        private void RecordCopiedFileToFileActivityArchive(string filename, string pathToCopy)
+        {
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                main_activity_start_time = _summary.StartTime,
+                current_time = DateTime.Now,
+                operation = "file-copied",
+                file_name = filename,
+                path_to_copy = pathToCopy
+            });
+            File.AppendAllText(_fileActivityArchive, text + Environment.NewLine);
+        }
+
+        private void RecordDeletedFileToFileActivityArchive(string filename, string pathToCopy)
+        {
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                main_activity_start_time = _summary.StartTime,
+                current_time = DateTime.Now,
+                operation = "file-deleted",
+                file_name = filename,
+                path_to_copy = pathToCopy
+            });
+            File.AppendAllText(_fileActivityArchive, text + Environment.NewLine);
         }
 
         private void WriteToConsoleAndToLog(string text)
