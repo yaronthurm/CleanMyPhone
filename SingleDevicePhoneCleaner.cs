@@ -68,6 +68,8 @@ namespace CleanMyPhone
                 {
                     CreateLogFile();
                     PrintConfigValues();
+                    if (DeviceDisabled())
+                        return;
                     WaitForSourceToBeAvailable();
                     InitializeEmailSender();
 
@@ -95,9 +97,19 @@ namespace CleanMyPhone
                 }
                 finally
                 {
-                    WaitForIdleTimeToPass();
+                    if (_deviceSettings.Enabled)
+                        WaitForIdleTimeToPass();
                 }
             }
+        }
+
+        private bool DeviceDisabled()
+        {
+            if (!_deviceSettings.Enabled)
+            {
+                WriteToConsoleAndToLog("Device is disabled");
+            }
+            return !_deviceSettings.Enabled;
         }
 
         private bool EnableDeleting()
