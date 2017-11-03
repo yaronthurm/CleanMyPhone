@@ -63,6 +63,12 @@ namespace CleanMyPhone
 
         private void HandleNewLogLine(SingleDevicePhoneCleaner sender, string line)
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((Action<SingleDevicePhoneCleaner, string>)HandleNewLogLine, sender, line);
+                return;
+            }
+
             var list = _logs[sender];
             list.Add(line);
             if (list.Count > 1000)
@@ -71,9 +77,7 @@ namespace CleanMyPhone
                 list.Clear();
                 list.AddRange(trailingLines);
             }
-
-            if (this.InvokeRequired)
-                this.BeginInvoke((Action)UpdateRollingLogBasedOnSelectedDevice);
+            UpdateRollingLogBasedOnSelectedDevice();
         }
 
 
