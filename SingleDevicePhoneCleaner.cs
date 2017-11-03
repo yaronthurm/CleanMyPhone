@@ -40,6 +40,7 @@ namespace CleanMyPhone
         {
             _thread = new Thread(Run);
             _thread.IsBackground = true;
+            _thread.Name = $"Cleaner thread for device: {DeviceID}";
             _thread.Start();
         }
 
@@ -183,7 +184,7 @@ namespace CleanMyPhone
             }
         }
 
-        private void Sleep(TimeSpan timeSpan)
+        private void Sleep(TimeSpan timeSpan, int stepInMilliseconds = 1000)
         {
             var timeToWakeup = DateTime.Now.Add(timeSpan);
             while (DateTime.Now < timeToWakeup)
@@ -191,7 +192,7 @@ namespace CleanMyPhone
                 if (_cancelToken.Token.IsCancellationRequested) return; 
 
                 var millisecondsLeft = (timeToWakeup - DateTime.Now).TotalMilliseconds;
-                var millisecondsToSleep = (int)Math.Min(1000, millisecondsLeft);
+                var millisecondsToSleep = (int)Math.Min(stepInMilliseconds, millisecondsLeft);
                 WriteToRollingLog($"Sleeping: {millisecondsToSleep}[ms]. Time till wakeup: {millisecondsLeft}[ms]");
                 Thread.Sleep(millisecondsToSleep);
             }
