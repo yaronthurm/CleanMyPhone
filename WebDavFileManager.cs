@@ -47,8 +47,14 @@ namespace CleanMyPhone
 
         public bool Exist(string filename)
         {
-            try {
-                var file = _myWebDavClient.TryGetItem(filename).Result;
+            return ExistAsync(filename).Result;
+        }
+
+        public async Task<bool> ExistAsync(string filename)
+        {
+            try
+            {
+                var file = await _myWebDavClient.TryGetItem(filename);
                 return file.Found;
             }
             catch

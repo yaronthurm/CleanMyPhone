@@ -34,7 +34,7 @@ namespace CleanMyPhone
             {
                 await AddOrUpdateCleaner(settings.Key, settings.Value);
             }
-            if (_settingsByDeviceID.Keys.Count > 0)
+            if (this.cmbDevices.Items.Count > 0)
                 this.cmbDevices.SelectedIndex = 0;
         }
 
@@ -251,6 +251,13 @@ namespace CleanMyPhone
                 PostMessageA(textbox.Handle, WM_VSCROLL, SB_THUMBPOSITION + 0x10000 * savedVpos, 0);
                 PostMessageA(textbox.Handle, WM_HSCROLL, SB_THUMBPOSITION + 0x10000 * savedHpos, 0);
             }
+        }
+
+        private void btnAddDevice_Click(object sender, EventArgs e)
+        {
+            var f = new AddDeviceForm();
+            f.StartPosition = FormStartPosition.CenterParent;
+            f.ShowDialog();
         }
     }
 }

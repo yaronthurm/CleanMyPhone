@@ -36,6 +36,7 @@
             this.txtRollingLog = new System.Windows.Forms.TextBox();
             this.btnSaveChanges = new System.Windows.Forms.Button();
             this.chkAutoScroll = new System.Windows.Forms.CheckBox();
+            this.btnAddDevice = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // _notifyIcon
@@ -103,11 +104,22 @@
             this.chkAutoScroll.Text = "Auto scroll";
             this.chkAutoScroll.UseVisualStyleBackColor = true;
             // 
+            // btnAddDevice
+            // 
+            this.btnAddDevice.Location = new System.Drawing.Point(377, 12);
+            this.btnAddDevice.Name = "btnAddDevice";
+            this.btnAddDevice.Size = new System.Drawing.Size(75, 23);
+            this.btnAddDevice.TabIndex = 14;
+            this.btnAddDevice.Text = "Add device";
+            this.btnAddDevice.UseVisualStyleBackColor = true;
+            this.btnAddDevice.Click += new System.EventHandler(this.btnAddDevice_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 461);
+            this.Controls.Add(this.btnAddDevice);
             this.Controls.Add(this.chkAutoScroll);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.txtRollingLog);
@@ -135,5 +147,6 @@
         private System.Windows.Forms.TextBox txtRollingLog;
         private System.Windows.Forms.Button btnSaveChanges;
         private System.Windows.Forms.CheckBox chkAutoScroll;
+        private System.Windows.Forms.Button btnAddDevice;
     }
 }
