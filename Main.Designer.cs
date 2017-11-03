@@ -35,7 +35,6 @@
             this.panelSettings = new System.Windows.Forms.FlowLayoutPanel();
             this.txtRollingLog = new System.Windows.Forms.TextBox();
             this.btnSaveChanges = new System.Windows.Forms.Button();
-            this.chkAutoScroll = new System.Windows.Forms.CheckBox();
             this.btnAddDevice = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -91,19 +90,6 @@
             this.btnSaveChanges.UseVisualStyleBackColor = true;
             this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
             // 
-            // chkAutoScroll
-            // 
-            this.chkAutoScroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkAutoScroll.AutoSize = true;
-            this.chkAutoScroll.Checked = true;
-            this.chkAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkAutoScroll.Location = new System.Drawing.Point(681, 30);
-            this.chkAutoScroll.Name = "chkAutoScroll";
-            this.chkAutoScroll.Size = new System.Drawing.Size(75, 17);
-            this.chkAutoScroll.TabIndex = 13;
-            this.chkAutoScroll.Text = "Auto scroll";
-            this.chkAutoScroll.UseVisualStyleBackColor = true;
-            // 
             // btnAddDevice
             // 
             this.btnAddDevice.Location = new System.Drawing.Point(377, 12);
@@ -120,7 +106,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 461);
             this.Controls.Add(this.btnAddDevice);
-            this.Controls.Add(this.chkAutoScroll);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.txtRollingLog);
             this.Controls.Add(this.panelSettings);
@@ -146,7 +131,6 @@
         private System.Windows.Forms.FlowLayoutPanel panelSettings;
         private System.Windows.Forms.TextBox txtRollingLog;
         private System.Windows.Forms.Button btnSaveChanges;
-        private System.Windows.Forms.CheckBox chkAutoScroll;
         private System.Windows.Forms.Button btnAddDevice;
     }
 }

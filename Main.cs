@@ -159,7 +159,7 @@ namespace CleanMyPhone
         private void UpdateRollingLogBasedOnSelectedDevice()
         {
             var selectedDeviceCleaner = _cleaners.First(x => x.DeviceID == _selectedDeviceID);
-            AppendTextToTextBox(this.txtRollingLog, _logs[selectedDeviceCleaner], this.chkAutoScroll.Checked);
+            AppendTextToTextBox(this.txtRollingLog, _logs[selectedDeviceCleaner].ToArray());
         }    
 
         private async void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -215,13 +215,22 @@ namespace CleanMyPhone
         }
 
 
+        private void btnAddDevice_Click(object sender, EventArgs e)
+        {
+            var f = new AddDeviceForm();
+            f.StartPosition = FormStartPosition.CenterParent;
+            f.ShowDialog();
+        }
 
-        private const int SB_HOR = 0x0;
+
+        private const int SB_HORZ = 0x0;
         private const int SB_VERT = 0x1;
         private const int WM_HSCROLL = 0x114;
         private const int WM_VSCROLL = 0x115;
         private const int SB_THUMBPOSITION = 0x4;
         private const int SB_BOTTOM = 0x7;
+        private const int SB_OFFSET = 13;
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int GetScrollPos(IntPtr hWnd, int nBar);
         [DllImport("user32.dll")]
@@ -231,33 +240,38 @@ namespace CleanMyPhone
         [DllImport("user32.dll")]
         public static extern bool LockWindowUpdate(IntPtr hWndLock);
 
-        private static void AppendTextToTextBox(TextBox textbox, List<string> lines, bool autoscroll)
-        {
-            int savedVpos = GetScrollPos(textbox.Handle, SB_VERT);
-            int savedHpos = GetScrollPos(textbox.Handle, SB_HOR);
-            int savedSelectionStart = textbox.SelectionStart;
-            int savedSelectionLenght = textbox.SelectionLength;
-            textbox.Lines = lines.ToArray();
-            textbox.SelectionStart = savedSelectionStart;
-            textbox.SelectionLength = savedSelectionLenght;
-            if (autoscroll)
-            {
-                PostMessageA(textbox.Handle, WM_VSCROLL, SB_BOTTOM, 0);
-            }
-            else
-            {
-                SetScrollPos(textbox.Handle, SB_VERT, savedVpos, true);
-                SetScrollPos(textbox.Handle, SB_HOR, savedHpos, true);
-                PostMessageA(textbox.Handle, WM_VSCROLL, SB_THUMBPOSITION + 0x10000 * savedVpos, 0);
-                PostMessageA(textbox.Handle, WM_HSCROLL, SB_THUMBPOSITION + 0x10000 * savedHpos, 0);
-            }
-        }
+        // Constants for extern calls to various scrollbar functions
+        [DllImport("user32.dll")]
+        static extern bool GetScrollRange(IntPtr hWnd, int nBar, out int lpMinPos, out int lpMaxPos);
 
-        private void btnAddDevice_Click(object sender, EventArgs e)
+        private static void AppendTextToTextBox(TextBox textbox, string[] text)
         {
-            var f = new AddDeviceForm();
-            f.StartPosition = FormStartPosition.CenterParent;
-            f.ShowDialog();
+            // Win32 magic to keep the textbox scrolling to the newest append to the textbox unless
+            // the user has moved the scrollbox up
+            int sbOffset = (int)((textbox.ClientSize.Height - SystemInformation.HorizontalScrollBarHeight) / (textbox.Font.Height));
+            int savedVpos = GetScrollPos(textbox.Handle, SB_VERT);
+            int savedHpos = GetScrollPos(textbox.Handle, SB_HORZ);
+
+            int VSmin, VSmax;
+            GetScrollRange(textbox.Handle, SB_VERT, out VSmin, out VSmax);
+
+            bool bottomFlag = false;
+            if (savedVpos >= (VSmax - sbOffset - 3))
+                bottomFlag = true;
+            textbox.Lines = text;
+            if (bottomFlag)
+            {
+                GetScrollRange(textbox.Handle, SB_VERT, out VSmin, out VSmax);
+                savedVpos = VSmax - sbOffset;
+            }
+
+            // Resume horizontal scroll
+            SetScrollPos(textbox.Handle, SB_HORZ, savedHpos, true);
+            PostMessageA(textbox.Handle, WM_HSCROLL, SB_THUMBPOSITION + 0x10000 * savedHpos, 0);
+            
+            // Resume/Set vertical scroll
+            SetScrollPos(textbox.Handle, SB_VERT, savedVpos, true);
+            PostMessageA(textbox.Handle, WM_VSCROLL, SB_THUMBPOSITION + 0x10000 * savedVpos, 0);
         }
     }
 }
