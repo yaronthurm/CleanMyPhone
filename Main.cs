@@ -244,7 +244,7 @@ namespace CleanMyPhone
         [DllImport("user32.dll")]
         static extern bool GetScrollRange(IntPtr hWnd, int nBar, out int lpMinPos, out int lpMaxPos);
 
-        private static void AppendTextToTextBox(TextBox textbox, string[] text)
+        private static void AppendTextToTextBox(TextBox textbox, string[] lines)
         {
             // Win32 magic to keep the textbox scrolling to the newest append to the textbox unless
             // the user has moved the scrollbox up
@@ -258,7 +258,13 @@ namespace CleanMyPhone
             bool bottomFlag = false;
             if (savedVpos >= (VSmax - sbOffset - 3))
                 bottomFlag = true;
-            textbox.Lines = text;
+
+            int savedSelectionStart = textbox.SelectionStart;
+            int savedSelectionLenght = textbox.SelectionLength;
+            textbox.Lines = lines.ToArray();
+            textbox.SelectionStart = savedSelectionStart;
+            textbox.SelectionLength = savedSelectionLenght;
+
             if (bottomFlag)
             {
                 GetScrollRange(textbox.Handle, SB_VERT, out VSmin, out VSmax);
