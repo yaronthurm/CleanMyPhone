@@ -62,7 +62,7 @@
             this.panelSettings.AutoScroll = true;
             this.panelSettings.Location = new System.Drawing.Point(12, 53);
             this.panelSettings.Name = "panelSettings";
-            this.panelSettings.Size = new System.Drawing.Size(347, 336);
+            this.panelSettings.Size = new System.Drawing.Size(347, 338);
             this.panelSettings.TabIndex = 10;
             // 
             // txtRollingLog
@@ -75,7 +75,7 @@
             this.txtRollingLog.Name = "txtRollingLog";
             this.txtRollingLog.ReadOnly = true;
             this.txtRollingLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtRollingLog.Size = new System.Drawing.Size(370, 336);
+            this.txtRollingLog.Size = new System.Drawing.Size(348, 338);
             this.txtRollingLog.TabIndex = 11;
             this.txtRollingLog.WordWrap = false;
             // 
@@ -92,10 +92,11 @@
             // 
             // chkAutoScroll
             // 
+            this.chkAutoScroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkAutoScroll.AutoSize = true;
             this.chkAutoScroll.Checked = true;
             this.chkAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkAutoScroll.Location = new System.Drawing.Point(703, 30);
+            this.chkAutoScroll.Location = new System.Drawing.Point(681, 30);
             this.chkAutoScroll.Name = "chkAutoScroll";
             this.chkAutoScroll.Size = new System.Drawing.Size(75, 17);
             this.chkAutoScroll.TabIndex = 13;
@@ -106,7 +107,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(806, 459);
+            this.ClientSize = new System.Drawing.Size(784, 461);
             this.Controls.Add(this.chkAutoScroll);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.txtRollingLog);
@@ -114,6 +115,7 @@
             this.Controls.Add(this.cmbDevices);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(800, 500);
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Main";
