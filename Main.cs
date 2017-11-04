@@ -215,11 +215,20 @@ namespace CleanMyPhone
         }
 
 
-        private void btnAddDevice_Click(object sender, EventArgs e)
+        private async void btnAddDevice_Click(object sender, EventArgs e)
         {
             var f = new AddDeviceForm();
             f.StartPosition = FormStartPosition.CenterParent;
             f.ShowDialog();
+
+            // Reload new items that were added (if any)
+            var freshSettings = CleanerSettings.GetAllConfigs(GetAppFolder());
+            var addedDevices = freshSettings.Where(x => !_settingsByDeviceID.ContainsKey(x.Key));
+            foreach (var addedDeviceSettings in addedDevices)
+            {
+                await AddOrUpdateCleaner(addedDeviceSettings.Key, addedDeviceSettings.Value);
+                _settingsByDeviceID.Add(addedDeviceSettings.Key, addedDeviceSettings.Value);
+            }
         }
 
 

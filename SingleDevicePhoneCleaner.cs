@@ -482,7 +482,7 @@ namespace CleanMyPhone
 
         private void WriteToRollingLog(string text)
         {
-            if (_rollingLogLength == 0)
+            if (_rollingLogLength == 0 && File.Exists(_rollingLogPath))
                 _rollingLogLength = File.ReadLines(_rollingLogPath).Count();
 
             if (_rollingLogLength > 1000)
