@@ -81,6 +81,7 @@
             // 
             // btnSaveChanges
             // 
+            this.btnSaveChanges.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSaveChanges.Enabled = false;
             this.btnSaveChanges.Location = new System.Drawing.Point(12, 416);
             this.btnSaveChanges.Name = "btnSaveChanges";
