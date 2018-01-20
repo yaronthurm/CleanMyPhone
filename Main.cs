@@ -80,7 +80,6 @@ namespace CleanMyPhone
             UpdateRollingLogBasedOnSelectedDevice();
         }
 
-
         private static string GetAppFolder()
         {
             var pathToAppFolder = Path.Combine(
@@ -213,8 +212,7 @@ namespace CleanMyPhone
             EnableDisableSaveChangesButton();
             await AddOrUpdateCleaner(_selectedDeviceID, _settingsByDeviceID[_selectedDeviceID]);
         }
-
-
+  
         private async void btnAddDevice_Click(object sender, EventArgs e)
         {
             var f = new AddDeviceForm();
@@ -223,12 +221,17 @@ namespace CleanMyPhone
 
             // Reload new items that were added (if any)
             var freshSettings = CleanerSettings.GetAllConfigs(GetAppFolder());
+            if (freshSettings.Count == 1) // This is the first item added
+                _selectedDeviceID = freshSettings.First().Key;
             var addedDevices = freshSettings.Where(x => !_settingsByDeviceID.ContainsKey(x.Key));
             foreach (var addedDeviceSettings in addedDevices)
             {
-                await AddOrUpdateCleaner(addedDeviceSettings.Key, addedDeviceSettings.Value);
                 _settingsByDeviceID.Add(addedDeviceSettings.Key, addedDeviceSettings.Value);
+                await AddOrUpdateCleaner(addedDeviceSettings.Key, addedDeviceSettings.Value);                
             }
+
+            if (this.cmbDevices.Items.Count == 1)// This is the first item added
+                this.cmbDevices.SelectedIndex = 0; // Ensure it is selected
         }
 
 
