@@ -87,6 +87,8 @@ namespace CleanMyPhone
         public static Dictionary<string, CleanerSettings> GetAllConfigs(string appFolder)
         {
             var devicesDir = Path.Combine(appFolder, "Devices");
+            if (!Directory.Exists(devicesDir))
+                Directory.CreateDirectory(devicesDir);
             var ret = Directory.GetDirectories(devicesDir)
                 .Select(x => new
                 {
