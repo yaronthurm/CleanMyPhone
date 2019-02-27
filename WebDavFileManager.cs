@@ -109,6 +109,11 @@ namespace CleanMyPhone
             DateTime ret;
             if (DateTime.TryParseExact(value, "ddd, d MMM yyyy HH:mm:ss GMT+00:00", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out ret))
                 return ret;
+            
+            //Wed, 12 Sep 2018 16:39:51 GMT
+            if (DateTime.TryParseExact(value, "ddd, d MMM yyyy HH:mm:ss GMT", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out ret))
+                return ret;
+
             return null;
         }
     }
