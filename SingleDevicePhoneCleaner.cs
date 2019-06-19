@@ -357,7 +357,7 @@ namespace CleanMyPhone
         {
             WriteToConsoleAndToLog($"Copy Missing Files. Source: {_deviceSettings.SourceFolder}, Destination: {_deviceSettings.DestinationFolder}");
 
-            var destinationFilesNames = Directory.GetFiles(_deviceSettings.DestinationFolder).Select(Path.GetFileName).ToLookup(x => x);
+            var destinationFilesNames = GetListOfFileNamesFromDestinationFolder();
             var missingFiles = _sourceFiles.Where(x => !destinationFilesNames.Contains(x.Name)).ToArray();
 
             WriteToConsoleAndToLog($"Found {missingFiles.Length} missing files.");
@@ -370,9 +370,18 @@ namespace CleanMyPhone
                 foreach (var missingFile in missingFiles)
                 {
                     _cancelToken.Token.ThrowIfCancellationRequested();
-                    WriteToConsoleAndToLog($"Copying missing file {++doneCount}/{missingFiles.Length}: {missingFile.Name}");
+                    WriteToConsoleAndToLog($"Copying missing file {++doneCount}/{missingFiles.Length}: {missingFile.Name} ({BytesToMegabytes(missingFile.SizeInBytes):0.##}[MB])");
                     var tmpPath = Path.Combine(tmpFolder, missingFile.Name);
-                    _sourceFileManager.CopyWithTimestamps(missingFile, tmpPath);
+                    try
+                    {
+                        _sourceFileManager.CopyWithTimestamps(missingFile, tmpPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteToConsoleAndToLog($"Failed copy file. Error: {ex.ToString()}");
+                        continue;
+                    }
+                    
 
                     // Check file length
                     var tmpFile = new FileInfo(tmpPath);
@@ -391,6 +400,13 @@ namespace CleanMyPhone
             }
         }
 
+        private HashSet<string> GetListOfFileNamesFromDestinationFolder()
+        {
+            var destinationFilesNames = Directory.GetFiles(_deviceSettings.DestinationFolder).Select(Path.GetFileName);
+            var ret = new HashSet<string>(destinationFilesNames);
+            return ret;
+        }
+
         private List<BasicFileInfo> GetListOfFilesToDelete(int highMBThreshold, int lowMBThreshold, List<string> excludeFilesShortName)
         {
             WriteToConsoleAndToLog($"Look for files to delete. Start delete threshold: {highMBThreshold}[MB], Stop delete threshold: {lowMBThreshold}[MB], exclude files count: {excludeFilesShortName.Count}");
@@ -405,7 +421,9 @@ namespace CleanMyPhone
                 WriteToConsoleAndToLog($"Total size {totalSizeMB:0.##}[MB] exceeds threshold of {highMBThreshold}[MB]. Need to delete {amountToRemoveMB:0.##}[MB]");
 
                 // Filter out files that should not be removed
+                var filesInDestination = GetListOfFileNamesFromDestinationFolder();
                 var validSourceFilesForDeletion = _sourceFiles
+                    .Where(x => filesInDestination.Contains(x.Name)) // Only delete files that have been copied
                     .Where(x => x.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-1)) // For cases where the 'created' attribute is missing (e.g. when mapping a drive over WebDAV)
                     .Where(x => !excludeFilesShortName.Contains(x.Name)) // Respect exclude files list
                     .ToArray();
