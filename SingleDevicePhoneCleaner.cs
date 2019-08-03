@@ -367,7 +367,7 @@ namespace CleanMyPhone
             {
                 var tmpFolder = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
                 Directory.CreateDirectory(tmpFolder);
-                foreach (var missingFile in missingFiles)
+                foreach (var missingFile in missingFiles.OrderBy(x => x.SizeInBytes))
                 {
                     _cancelToken.Token.ThrowIfCancellationRequested();
                     WriteToConsoleAndToLog($"Copying missing file {++doneCount}/{missingFiles.Length}: {missingFile.Name} ({BytesToMegabytes(missingFile.SizeInBytes):0.##}[MB])");
