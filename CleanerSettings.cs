@@ -220,7 +220,8 @@ namespace CleanMyPhone
         }
         
         public void Save()
-        {            
+        {
+            File.WriteAllText(this.SettingsFile, this.ToText());
         }        
     }
 }
