@@ -95,6 +95,16 @@ namespace CleanMyPhone
             _selectedDeviceID = this.cmbDevices.SelectedItem.ToString();
 
             var selectedDeviceSettings = _settingsByDeviceID[_selectedDeviceID];
+            if (selectedDeviceSettings is CleanerSettingsV1)
+                RenderSettingsV1(selectedDeviceSettings as CleanerSettingsV1);
+            if (selectedDeviceSettings is CleanerSettingsV2)
+                RenderSettingsV2(selectedDeviceSettings as CleanerSettingsV2);
+
+            UpdateRollingLogBasedOnSelectedDevice();
+        }
+
+        private void RenderSettingsV1(CleanerSettingsV1 selectedDeviceSettings )
+        {
             this.panelSettings.Controls.Clear();
             foreach (var prop in typeof(CleanerSettingsV1).GetProperties())
             {
@@ -116,7 +126,7 @@ namespace CleanMyPhone
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var checkBox = new CheckBox() { Checked = bool.Parse(value)};
+                    var checkBox = new CheckBox() { Checked = bool.Parse(value) };
                     checkBox.CheckedChanged += (s1, e1) =>
                     {
                         (s1 as CheckBox).Text = (s1 as CheckBox).Checked.ToString();
@@ -147,8 +157,19 @@ namespace CleanMyPhone
                 }
                 EnableDisableSaveChangesButton();
             }
+        }
 
-            UpdateRollingLogBasedOnSelectedDevice();
+        private void RenderSettingsV2(CleanerSettingsV2 selectedDeviceSettings)
+        {
+            this.panelSettings.Controls.Clear();
+            var txtBox = new TextBox();
+            txtBox.Multiline = true;
+            txtBox.Margin = new Padding(0, 0, 0, 8);
+            txtBox.Width = this.panelSettings.Width - 30;
+            txtBox.Height = this.panelSettings.Height - 10;
+            txtBox.Tag = txtBox.Text = selectedDeviceSettings.ToText();
+            txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();            
+            this.panelSettings.Controls.AddRange(new Control[] { txtBox });            
         }
 
         private void EnableDisableSaveChangesButton()
@@ -209,7 +230,14 @@ namespace CleanMyPhone
 
         private async void btnSaveChanges_Click(object sender, EventArgs e)
         {
-            _settingsByDeviceID[_selectedDeviceID].Save();
+            var selectedSettings = _settingsByDeviceID[_selectedDeviceID];
+            if (selectedSettings is CleanerSettingsV2)
+            {
+                var txt = this.panelSettings.Controls.Cast<Control>().OfType<TextBox>().FirstOrDefault()?.Text;
+                (selectedSettings as CleanerSettingsV2).UpdateFromText(txt);
+            }
+
+            selectedSettings.Save();
             foreach (Control ctrl in this.panelSettings.Controls)
                 if (ctrl.Tag != null)
                     ctrl.Tag = ctrl.Text;
