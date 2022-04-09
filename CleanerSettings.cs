@@ -131,4 +131,36 @@ namespace CleanMyPhone
             return ret;
         }
     }
+
+    public class CleanerSettingsV2 : ICleanerSettings
+    {
+        public bool Enabled { get; private set; }
+        public int Port { get; private set; }
+        public string Username { get; private set; }
+        public string Password { get; private set; }
+        public int IdleTimeBetweenRunsInSeconds { get; private set; }
+
+
+        private string SettingsFile { get; set; }
+        private string DeviceFolder { get; set; }
+
+        public IEnumerable<PerFolderSettings> FoldersSettings => new[] {new PerFolderSettings()};
+
+        public string GetSettingsFile() => this.SettingsFile;
+        public string GetDeviceFolder() => this.DeviceFolder;
+
+
+        private CleanerSettingsV2() { }
+
+
+        public static CleanerSettingsV2 LoadFromFile(string filename)
+        {
+            var ret = new CleanerSettingsV2();           
+            return ret;
+        }
+        
+        public void Save()
+        {            
+        }        
+    }
 }
