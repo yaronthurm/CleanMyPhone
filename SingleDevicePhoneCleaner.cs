@@ -76,12 +76,7 @@ namespace CleanMyPhone
                     MarkStartTime();
                     InitializeSourceFilesList();
                     CopyMissingFiles();
-                    if (EnableDeleting())
-                    {
-                        var filesToDelete = GetListOfFilesToDelete(_deviceSettings.HighMbThreshold, _deviceSettings.LowMbThreshold, GetExcludeList());
-                        if (filesToDelete.Any())
-                            DeleteFilesForCleanup(filesToDelete);
-                    }
+                    MaybeDeleteFiles();
                     MarkEndTime();
                     TrySendSuccessRunEmail();
                 }
@@ -103,6 +98,16 @@ namespace CleanMyPhone
             }
         }
 
+        private void MaybeDeleteFiles()
+        {
+            if (_deviceSettings.EnableDeleting)
+            {
+                var filesToDelete = GetListOfFilesToDelete(_deviceSettings.HighMbThreshold, _deviceSettings.LowMbThreshold, GetExcludeList());
+                if (filesToDelete.Any())
+                    DeleteFilesForCleanup(filesToDelete);
+            }
+        }
+
         private bool DeviceDisabled()
         {
             if (!_deviceSettings.Enabled)
@@ -110,12 +115,7 @@ namespace CleanMyPhone
                 WriteToConsoleAndToLog("Device is disabled");
             }
             return !_deviceSettings.Enabled;
-        }
-
-        private bool EnableDeleting()
-        {
-            return _deviceSettings.EnableDeleting;
-        }
+        }        
 
         private void TrySendFailedRunEmail(Exception ex)
         {
