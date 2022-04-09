@@ -36,10 +36,22 @@ namespace CleanMyPhone
             if (!Directory.Exists(devicesDir))
                 Directory.CreateDirectory(devicesDir);
             var ret = Directory.GetDirectories(devicesDir)
-                .Select(x => new
+                .Select(x =>
                 {
-                    id = Path.GetFileName(x),
-                    settings = (ICleanerSettings)CleanerSettingsV1.LoadFromFile(Path.Combine(x, "Settings.txt"))
+                    var path_v1 = Path.Combine(x, "Settings.txt");
+                    var path_v2 = Path.Combine(x, "Settings_v2.txt");
+                    if (File.Exists(path_v2))
+                        return new
+                        {
+                            id = Path.GetFileName(x),
+                            settings = (ICleanerSettings)CleanerSettingsV2.LoadFromFile(path_v2)
+                        };
+                    else
+                        return new
+                        {
+                            id = Path.GetFileName(x),
+                            settings = (ICleanerSettings)CleanerSettingsV1.LoadFromFile(path_v1)
+                        };
                 })
                 .ToDictionary(x => x.id, x => x.settings, StringComparer.OrdinalIgnoreCase);
             return ret;
