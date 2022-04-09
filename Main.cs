@@ -168,7 +168,7 @@ namespace CleanMyPhone
             txtBox.Width = this.panelSettings.Width - 30;
             txtBox.Height = this.panelSettings.Height - 10;
             txtBox.Tag = txtBox.Text = selectedDeviceSettings.ToText();
-            txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();            
+            txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();
             this.panelSettings.Controls.AddRange(new Control[] { txtBox });            
         }
 
@@ -234,7 +234,15 @@ namespace CleanMyPhone
             if (selectedSettings is CleanerSettingsV2)
             {
                 var txt = this.panelSettings.Controls.Cast<Control>().OfType<TextBox>().FirstOrDefault()?.Text;
-                (selectedSettings as CleanerSettingsV2).UpdateFromText(txt);
+                try
+                {
+                    (selectedSettings as CleanerSettingsV2).UpdateFromText(txt);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Invalid input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                } 
             }
 
             selectedSettings.Save();
