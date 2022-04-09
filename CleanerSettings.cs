@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace CleanMyPhone
         string Password { get; }
         int Port { get; }
         int IdleTimeBetweenRunsInSeconds { get; }
-        IEnumerable<PerFolderSettings> FoldersSettings { get;  }
+        PerFolderSettings[] FoldersSettings { get;  }
 
         string GetSettingsFile();
         string GetDeviceFolder();
@@ -75,7 +76,7 @@ namespace CleanMyPhone
         private string SettingsFile { get; set; }
         private string DeviceFolder { get; set; }
 
-        public IEnumerable<PerFolderSettings> FoldersSettings => new[] {
+        public PerFolderSettings[] FoldersSettings => new[] {
             new PerFolderSettings {
                 EnableDeleting = this.EnableDeleting,
                 HighMbThreshold = this.HighMbThreshold,
@@ -160,7 +161,7 @@ namespace CleanMyPhone
         private string SettingsFile { get; set; }
         private string DeviceFolder { get; set; }
 
-        public IEnumerable<PerFolderSettings> FoldersSettings => new[] {new PerFolderSettings()};
+        public PerFolderSettings[] FoldersSettings { get; private set; }
 
         public string GetSettingsFile() => this.SettingsFile;
         public string GetDeviceFolder() => this.DeviceFolder;
@@ -171,8 +172,51 @@ namespace CleanMyPhone
 
         public static CleanerSettingsV2 LoadFromFile(string filename)
         {
-            var ret = new CleanerSettingsV2();           
+            var ret = new CleanerSettingsV2();
+            ret.SettingsFile = filename;
+            ret.DeviceFolder = Path.GetDirectoryName(filename);
+            ret.UpdateFromText(File.ReadAllText(filename));
             return ret;
+        }
+
+        public string ToText()
+        {
+            var json = new JObject(
+                new JProperty("enabled", this.Enabled),
+                new JProperty("port", this.Port),
+                new JProperty("username", this.Username),
+                new JProperty("password", this.Password),
+                new JProperty("idle-time-between-runs-in-seconds", this.IdleTimeBetweenRunsInSeconds),
+                new JProperty("folders", new JArray(
+                    this.FoldersSettings.Select(x => 
+                        new JObject(
+                            new JProperty("source-folder", x.SourceFolder),
+                            new JProperty("destination-folder", x.DestinationFolder),
+                            new JProperty("enable-deleting", x.EnableDeleting),
+                            new JProperty("high-mb-threshold", x.HighMbThreshold),
+                            new JProperty("low-mb-threshold", x.LowMbThreshold)
+                        )))));
+
+            return json.ToString(Newtonsoft.Json.Formatting.Indented);
+        }
+
+        public void UpdateFromText(string text) {
+            var json = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(text);
+            this.Enabled = json.Value<bool>("enabled");
+            this.Port = json.Value<int>("port");
+            this.Username = json.Value<string>("username");
+            this.Password = json.Value<string>("password");
+            this.IdleTimeBetweenRunsInSeconds = json.Value<int>("idle-time-between-runs-in-seconds");
+            this.FoldersSettings = json.Value<JArray>("folders")
+                .Select(x => new PerFolderSettings
+                {
+                    SourceFolder = x.Value<string>("source-folder"),
+                    DestinationFolder = x.Value<string>("destination-folder"),
+                    EnableDeleting = x.Value<bool>("enable-deleting"),
+                    HighMbThreshold = x.Value<int>("high-mb-threshold"),
+                    LowMbThreshold = x.Value<int>("low-mb-threshold"),
+                })
+                .ToArray();
         }
         
         public void Save()
