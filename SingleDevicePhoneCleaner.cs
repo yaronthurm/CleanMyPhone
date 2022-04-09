@@ -364,6 +364,8 @@ namespace CleanMyPhone
         private void CopyMissingFiles(PerFolderSettings settings)
         {
             WriteToConsoleAndToLog($"Copy Missing Files. Source: {settings.SourceFolder}, Destination: {settings.DestinationFolder}");
+            if (!Directory.Exists(settings.DestinationFolder))
+                Directory.CreateDirectory(settings.DestinationFolder);
 
             var destinationFilesNames = GetListOfFileNamesFromDestinationFolder(settings.DestinationFolder);
             var missingFiles = _sourceFiles.Where(x => !destinationFilesNames.Contains(x.Name)).ToArray();
@@ -374,7 +376,7 @@ namespace CleanMyPhone
             if (missingFiles.Any())
             {
                 var tmpFolder = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-                Directory.CreateDirectory(tmpFolder);
+                Directory.CreateDirectory(tmpFolder);                
                 foreach (var missingFile in missingFiles.OrderBy(x => x.SizeInBytes))
                 {
                     _cancelToken.Token.ThrowIfCancellationRequested();
