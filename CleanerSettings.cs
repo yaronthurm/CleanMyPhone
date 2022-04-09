@@ -27,7 +27,7 @@ namespace CleanMyPhone
         public string DestinationFolder;        
     }
 
-    public class CleanerSettings : ICleanerSettings
+    public class CleanerSettingsV1 : ICleanerSettings
     {
         public bool Enabled { get; private set; }
         public int Port { get; private set; }
@@ -58,17 +58,17 @@ namespace CleanMyPhone
         public string GetDeviceFolder() => this.DeviceFolder;
 
 
-        private CleanerSettings() { }
+        private CleanerSettingsV1() { }
 
 
-        public static CleanerSettings LoadFromFile(string filename)
+        public static CleanerSettingsV1 LoadFromFile(string filename)
         {
             var configValues = File.ReadAllLines(filename)
                 .Select(x => x.Split(new char[] { '=' }, 2))
                 .Select(x => new { key = x[0].Trim(), value = x[1].Trim() })
                 .ToDictionary(x => x.key, x => x.value);
 
-            var ret = new CleanerSettings();
+            var ret = new CleanerSettingsV1();
             ret.SettingsFile = filename;
             ret.Enabled = GetValueWithDefault(configValues, "enabled", bool.Parse, false);
             ret.DeviceFolder = Path.GetDirectoryName(filename);
@@ -116,7 +116,7 @@ namespace CleanMyPhone
                 });
         }
 
-        public static Dictionary<string, CleanerSettings> GetAllConfigs(string appFolder)
+        public static Dictionary<string, CleanerSettingsV1> GetAllConfigs(string appFolder)
         {
             var devicesDir = Path.Combine(appFolder, "Devices");
             if (!Directory.Exists(devicesDir))
@@ -125,7 +125,7 @@ namespace CleanMyPhone
                 .Select(x => new
                 {
                     id = Path.GetFileName(x),
-                    settings = CleanerSettings.LoadFromFile(Path.Combine(x, "Settings.txt"))
+                    settings = CleanerSettingsV1.LoadFromFile(Path.Combine(x, "Settings.txt"))
                 })
                 .ToDictionary(x => x.id, x => x.settings, StringComparer.OrdinalIgnoreCase);
             return ret;
