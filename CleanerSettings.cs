@@ -5,6 +5,8 @@ using System.Linq;
 
 namespace CleanMyPhone
 {
+    public interface ICleanerSettings { }
+
     public class CleanerSettings
     {
         public bool Enabled { get; private set; }
