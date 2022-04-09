@@ -257,8 +257,7 @@ namespace CleanMyPhone
                 {
                     WriteToConsoleAndToLog($"\tHighMBThreshold: {folderSetting.HighMbThreshold}");
                     WriteToConsoleAndToLog($"\tLowMBThreshold: {folderSetting.LowMbThreshold}");
-                }
-                WriteToConsoleAndToLog("\t***************************************");
+                }                
             }
         }
 
