@@ -16,6 +16,7 @@ namespace CleanMyPhone
 
         string GetSettingsFile();
         string GetDeviceFolder();
+        void Save();
     }
 
     public class PerFolderSettings
@@ -25,6 +26,24 @@ namespace CleanMyPhone
         public int LowMbThreshold;
         public string SourceFolder;
         public string DestinationFolder;        
+    }
+
+    public static class CleanerSettingsFactory {
+
+        public static Dictionary<string, ICleanerSettings> GetAllConfigs(string appFolder)
+        {
+            var devicesDir = Path.Combine(appFolder, "Devices");
+            if (!Directory.Exists(devicesDir))
+                Directory.CreateDirectory(devicesDir);
+            var ret = Directory.GetDirectories(devicesDir)
+                .Select(x => new
+                {
+                    id = Path.GetFileName(x),
+                    settings = (ICleanerSettings)CleanerSettingsV1.LoadFromFile(Path.Combine(x, "Settings.txt"))
+                })
+                .ToDictionary(x => x.id, x => x.settings, StringComparer.OrdinalIgnoreCase);
+            return ret;
+        }
     }
 
     public class CleanerSettingsV1 : ICleanerSettings
@@ -114,22 +133,7 @@ namespace CleanMyPhone
                 $"low-mb-threshold = {this.LowMbThreshold}",
                 $"idle-time-between-runs-in-seconds = {this.IdleTimeBetweenRunsInSeconds}",
                 });
-        }
-
-        public static Dictionary<string, CleanerSettingsV1> GetAllConfigs(string appFolder)
-        {
-            var devicesDir = Path.Combine(appFolder, "Devices");
-            if (!Directory.Exists(devicesDir))
-                Directory.CreateDirectory(devicesDir);
-            var ret = Directory.GetDirectories(devicesDir)
-                .Select(x => new
-                {
-                    id = Path.GetFileName(x),
-                    settings = CleanerSettingsV1.LoadFromFile(Path.Combine(x, "Settings.txt"))
-                })
-                .ToDictionary(x => x.id, x => x.settings, StringComparer.OrdinalIgnoreCase);
-            return ret;
-        }
+        }        
     }
 
     public class CleanerSettingsV2 : ICleanerSettings

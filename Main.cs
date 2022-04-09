@@ -15,7 +15,7 @@ namespace CleanMyPhone
 {
     public partial class Main : Form
     {
-        private Dictionary<string, CleanerSettingsV1> _settingsByDeviceID;
+        private Dictionary<string, ICleanerSettings> _settingsByDeviceID;
         private List<SingleDevicePhoneCleaner> _cleaners = new List<SingleDevicePhoneCleaner>();
         private Dictionary<SingleDevicePhoneCleaner, List<string>> _logs = new Dictionary<SingleDevicePhoneCleaner, List<string>>();
         private string _selectedDeviceID;
@@ -29,7 +29,7 @@ namespace CleanMyPhone
 
         private async void Main_Load(object sender, EventArgs e)
         {
-            _settingsByDeviceID = CleanerSettingsV1.GetAllConfigs(GetAppFolder());
+            _settingsByDeviceID = CleanerSettingsFactory.GetAllConfigs(GetAppFolder());
             foreach (var settings in _settingsByDeviceID)
             {
                 await AddOrUpdateCleaner(settings.Key, settings.Value);
@@ -38,7 +38,7 @@ namespace CleanMyPhone
                 this.cmbDevices.SelectedIndex = 0;
         }
 
-        private async Task AddOrUpdateCleaner(string deviceID, CleanerSettingsV1 settings)
+        private async Task AddOrUpdateCleaner(string deviceID, ICleanerSettings settings)
         {
             // Add to combo box
             if (!this.cmbDevices.Items.OfType<string>().Any(x => x == deviceID))
@@ -224,7 +224,7 @@ namespace CleanMyPhone
             f.ShowDialog();
 
             // Reload new items that were added (if any)
-            var freshSettings = CleanerSettingsV1.GetAllConfigs(GetAppFolder());
+            var freshSettings = CleanerSettingsFactory.GetAllConfigs(GetAppFolder());
             if (freshSettings.Count == 1) // This is the first item added
                 _selectedDeviceID = freshSettings.First().Key;
             var addedDevices = freshSettings.Where(x => !_settingsByDeviceID.ContainsKey(x.Key));
