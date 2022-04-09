@@ -169,6 +169,7 @@ namespace CleanMyPhone
             txtBox.Height = this.panelSettings.Height - 10;
             txtBox.Tag = txtBox.Text = selectedDeviceSettings.ToText();
             txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();
+            txtBox.WordWrap = false;
             this.panelSettings.Controls.AddRange(new Control[] { txtBox });            
         }
 
