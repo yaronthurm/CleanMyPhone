@@ -16,7 +16,7 @@ namespace CleanMyPhone
 
         public string DeviceID { get; private set; }
 
-        private CleanerSettings _deviceSettings;
+        private ICleanerSettings _deviceSettings;
 
         private string _logFilePath;
         private string _rollingLogPath;
@@ -30,7 +30,7 @@ namespace CleanMyPhone
         private CancellationTokenSource _cancelToken = new CancellationTokenSource();
         private string _fileActivityArchive;
 
-        public SingleDevicePhoneCleaner(string deviceID, CleanerSettings deviceSettings)
+        public SingleDevicePhoneCleaner(string deviceID, ICleanerSettings deviceSettings)
         {
             this.DeviceID = deviceID;
             this._deviceSettings = deviceSettings;

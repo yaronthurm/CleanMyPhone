@@ -5,9 +5,24 @@ using System.Linq;
 
 namespace CleanMyPhone
 {
-    public interface ICleanerSettings { }
+    public interface ICleanerSettings
+    {
+        bool Enabled { get; }
+        bool EnableDeleting { get; }
+        int HighMbThreshold { get; }
+        int LowMbThreshold { get; }
+        string Username { get; }
+        string Password { get; }
+        string SourceFolder { get; }
+        string DestinationFolder { get; }
+        int Port { get; }
+        int IdleTimeBetweenRunsInSeconds { get; }
 
-    public class CleanerSettings
+        string GetSettingsFile();
+        string GetDeviceFolder();
+    }
+
+    public class CleanerSettings : ICleanerSettings
     {
         public bool Enabled { get; private set; }
         public int Port { get; private set; }
