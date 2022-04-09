@@ -8,18 +8,23 @@ namespace CleanMyPhone
     public interface ICleanerSettings
     {
         bool Enabled { get; }
-        bool EnableDeleting { get; }
-        int HighMbThreshold { get; }
-        int LowMbThreshold { get; }
         string Username { get; }
         string Password { get; }
-        string SourceFolder { get; }
-        string DestinationFolder { get; }
         int Port { get; }
         int IdleTimeBetweenRunsInSeconds { get; }
+        IEnumerable<PerFolderSettings> FoldersSettings { get;  }
 
         string GetSettingsFile();
         string GetDeviceFolder();
+    }
+
+    public class PerFolderSettings
+    {
+        public bool EnableDeleting;
+        public int HighMbThreshold;
+        public int LowMbThreshold;
+        public string SourceFolder;
+        public string DestinationFolder;        
     }
 
     public class CleanerSettings : ICleanerSettings
@@ -38,6 +43,16 @@ namespace CleanMyPhone
 
         private string SettingsFile { get; set; }
         private string DeviceFolder { get; set; }
+
+        public IEnumerable<PerFolderSettings> FoldersSettings => new[] {
+            new PerFolderSettings {
+                EnableDeleting = this.EnableDeleting,
+                HighMbThreshold = this.HighMbThreshold,
+                LowMbThreshold = this.LowMbThreshold,
+                SourceFolder = this.SourceFolder,
+                DestinationFolder = this.DestinationFolder
+            }
+        };
 
         public string GetSettingsFile() => this.SettingsFile;
         public string GetDeviceFolder() => this.DeviceFolder;

@@ -102,7 +102,7 @@ namespace CleanMyPhone
                 var value = prop.GetValue(selectedDeviceSettings).ToString();
                 var label = new Label() { Text = name, Margin = new Padding(0), Height = 15, BackColor = Color.LightBlue, Width = this.panelSettings.Width - 30 };
 
-                Control valueCtrl;
+                Control valueCtrl = null;
                 if (prop.PropertyType == typeof(int))
                 {
                     var numeric = new NumericUpDown() { Minimum = int.MinValue, Maximum = int.MaxValue };
@@ -125,7 +125,8 @@ namespace CleanMyPhone
                     };
                     valueCtrl = checkBox;
                 }
-                else {
+                else if (prop.PropertyType == typeof(string))
+                {
                     var txtBox = new TextBox();
                     txtBox.TextChanged += (s1, e1) =>
                     {
@@ -135,12 +136,15 @@ namespace CleanMyPhone
                     valueCtrl = txtBox;
                 }
 
-                valueCtrl.Margin = new Padding(0, 0, 0, 8);
-                valueCtrl.Width = this.panelSettings.Width - 30;
-                valueCtrl.Tag = value;
-                valueCtrl.Text = value;
-                
-                this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
+                if (valueCtrl != null)
+                {
+                    valueCtrl.Margin = new Padding(0, 0, 0, 8);
+                    valueCtrl.Width = this.panelSettings.Width - 30;
+                    valueCtrl.Tag = value;
+                    valueCtrl.Text = value;
+
+                    this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
+                }
                 EnableDisableSaveChangesButton();
             }
 

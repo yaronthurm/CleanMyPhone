@@ -74,9 +74,12 @@ namespace CleanMyPhone
                     InitializeEmailSender();
 
                     MarkStartTime();
-                    InitializeSourceFilesList();
-                    CopyMissingFiles();
-                    MaybeDeleteFiles();
+                    foreach (var folderSetting in _deviceSettings.FoldersSettings)
+                    {
+                        InitializeSourceFilesList(folderSetting);
+                        CopyMissingFiles(folderSetting);
+                        MaybeDeleteFiles(folderSetting);
+                    }
                     MarkEndTime();
                     TrySendSuccessRunEmail();
                 }
@@ -98,13 +101,13 @@ namespace CleanMyPhone
             }
         }
 
-        private void MaybeDeleteFiles()
+        private void MaybeDeleteFiles(PerFolderSettings settings)
         {
-            if (_deviceSettings.EnableDeleting)
+            if (settings.EnableDeleting)
             {
-                var filesToDelete = GetListOfFilesToDelete(_deviceSettings.HighMbThreshold, _deviceSettings.LowMbThreshold, GetExcludeList());
+                var filesToDelete = GetListOfFilesToDelete(settings, GetExcludeList());
                 if (filesToDelete.Any())
-                    DeleteFilesForCleanup(filesToDelete);
+                    DeleteFilesForCleanup(settings.DestinationFolder, filesToDelete);
             }
         }
 
@@ -144,11 +147,11 @@ namespace CleanMyPhone
             }
         }
 
-        private void InitializeSourceFilesList()
+        private void InitializeSourceFilesList(PerFolderSettings settings)
         {
             _cancelToken.Token.ThrowIfCancellationRequested();
-            WriteToConsoleAndToLog("Retrieving files from source");
-            _sourceFiles = _sourceFileManager.ListFiles(_deviceSettings.SourceFolder).ToArray();
+            WriteToConsoleAndToLog($"Retrieving files from source: {settings.SourceFolder}");
+            _sourceFiles = _sourceFileManager.ListFiles(settings.SourceFolder).ToArray();
             var totalSizeMB = BytesToMegabytes(_sourceFiles.Select(x => x.SizeInBytes).Sum());
             _summary.TotalMbBeforeDelete = totalSizeMB;
             WriteToConsoleAndToLog($"Found {_sourceFiles.Length} Files. Total size: {totalSizeMB:0.##[MB]}");
@@ -242,14 +245,20 @@ namespace CleanMyPhone
         {
             WriteToConsoleAndToLog($"Loaded configuration from: {_deviceSettings.GetSettingsFile()}");
             WriteToConsoleAndToLog($"\tPort: {_deviceSettings.Port}");
-            WriteToConsoleAndToLog($"\tSourceFolder: {_deviceSettings.SourceFolder}");
-            WriteToConsoleAndToLog($"\tDestinationFolder: {_deviceSettings.DestinationFolder}");
             WriteToConsoleAndToLog($"\tDeviceFolder: {_deviceSettings.GetDeviceFolder()}");
-            WriteToConsoleAndToLog($"\tEnableDeleting: {_deviceSettings.EnableDeleting}");
-            if (_deviceSettings.EnableDeleting)
+            foreach (var folderSetting in _deviceSettings.FoldersSettings)
             {
-                WriteToConsoleAndToLog($"\tHighMBThreshold: {_deviceSettings.HighMbThreshold}");
-                WriteToConsoleAndToLog($"\tLowMBThreshold: {_deviceSettings.LowMbThreshold}");
+                WriteToConsoleAndToLog("\t***************************************");
+                WriteToConsoleAndToLog($"\tSourceFolder: {folderSetting.SourceFolder}");
+                WriteToConsoleAndToLog($"\tDestinationFolder: {folderSetting.DestinationFolder}");
+                
+                WriteToConsoleAndToLog($"\tEnableDeleting: {folderSetting.EnableDeleting}");
+                if (folderSetting.EnableDeleting)
+                {
+                    WriteToConsoleAndToLog($"\tHighMBThreshold: {folderSetting.HighMbThreshold}");
+                    WriteToConsoleAndToLog($"\tLowMBThreshold: {folderSetting.LowMbThreshold}");
+                }
+                WriteToConsoleAndToLog("\t***************************************");
             }
         }
 
@@ -336,7 +345,7 @@ namespace CleanMyPhone
             return ret;
         }
 
-        private void DeleteFilesForCleanup(List<BasicFileInfo> filesToDelete)
+        private void DeleteFilesForCleanup(string destinationFolder, List<BasicFileInfo> filesToDelete)
         {
             WriteToConsoleAndToLog($"About to delete {filesToDelete.Count} files to clean up storage");
             var doneCount = 0;
@@ -347,17 +356,17 @@ namespace CleanMyPhone
                 var fileSize = file.SizeInBytes;
                 _sourceFileManager.Delete(file);
 
-                RecordDeletedFileToFileActivityArchive(file.Name, Path.Combine(_deviceSettings.DestinationFolder, file.Name));
+                RecordDeletedFileToFileActivityArchive(file.Name, Path.Combine(destinationFolder, file.Name));
                 _summary.TotalMbDeleted += BytesToMegabytes(fileSize);
                 _summary.TotalFilesDeleted++;
             }
         }
 
-        private void CopyMissingFiles()
+        private void CopyMissingFiles(PerFolderSettings settings)
         {
-            WriteToConsoleAndToLog($"Copy Missing Files. Source: {_deviceSettings.SourceFolder}, Destination: {_deviceSettings.DestinationFolder}");
+            WriteToConsoleAndToLog($"Copy Missing Files. Source: {settings.SourceFolder}, Destination: {settings.DestinationFolder}");
 
-            var destinationFilesNames = GetListOfFileNamesFromDestinationFolder();
+            var destinationFilesNames = GetListOfFileNamesFromDestinationFolder(settings.DestinationFolder);
             var missingFiles = _sourceFiles.Where(x => !destinationFilesNames.Contains(x.Name)).ToArray();
 
             WriteToConsoleAndToLog($"Found {missingFiles.Length} missing files.");
@@ -387,41 +396,41 @@ namespace CleanMyPhone
                     var tmpFile = new FileInfo(tmpPath);
                     if (tmpFile.Length == missingFile.SizeInBytes) // OK
                     {
-                        var destinationPath = Path.Combine(_deviceSettings.DestinationFolder, missingFile.Name);
+                        var destinationPath = Path.Combine(settings.DestinationFolder, missingFile.Name);
                         File.Move(tmpPath, destinationPath);
                         File.SetCreationTimeUtc(destinationPath, tmpFile.CreationTimeUtc);
                         File.SetLastAccessTimeUtc(destinationPath, tmpFile.LastAccessTimeUtc);
                         File.SetLastWriteTimeUtc(destinationPath, tmpFile.LastWriteTimeUtc);
                         _summary.TotalMissingFilesCopied++;
-                        RecordCopiedFileToFileActivityArchive(missingFile.Name, Path.Combine(_deviceSettings.DestinationFolder, destinationPath));
+                        RecordCopiedFileToFileActivityArchive(missingFile.Name, Path.Combine(settings.DestinationFolder, destinationPath));
                     }
                 }
                 Directory.Delete(tmpFolder);
             }
         }
 
-        private HashSet<string> GetListOfFileNamesFromDestinationFolder()
+        private HashSet<string> GetListOfFileNamesFromDestinationFolder(string destinationFolder)
         {
-            var destinationFilesNames = Directory.GetFiles(_deviceSettings.DestinationFolder).Select(Path.GetFileName);
+            var destinationFilesNames = Directory.GetFiles(destinationFolder).Select(Path.GetFileName);
             var ret = new HashSet<string>(destinationFilesNames);
             return ret;
         }
 
-        private List<BasicFileInfo> GetListOfFilesToDelete(int highMBThreshold, int lowMBThreshold, List<string> excludeFilesShortName)
+        private List<BasicFileInfo> GetListOfFilesToDelete(PerFolderSettings settings, List<string> excludeFilesShortName)
         {
-            WriteToConsoleAndToLog($"Look for files to delete. Start delete threshold: {highMBThreshold}[MB], Stop delete threshold: {lowMBThreshold}[MB], exclude files count: {excludeFilesShortName.Count}");
+            WriteToConsoleAndToLog($"Look for files to delete. Start delete threshold: {settings.HighMbThreshold}[MB], Stop delete threshold: {settings.LowMbThreshold}[MB], exclude files count: {excludeFilesShortName.Count}");
             var ret = new List<BasicFileInfo>();
             var totalSizeMB = BytesToMegabytes(_sourceFiles.Select(x => x.SizeInBytes).Sum());
 
-            _summary.HighMBThreshold = highMBThreshold;
-            _summary.LowMBThreshold = lowMBThreshold;
-            if (totalSizeMB > highMBThreshold)
+            _summary.HighMBThreshold = settings.HighMbThreshold;
+            _summary.LowMBThreshold = settings.LowMbThreshold;
+            if (totalSizeMB > settings.HighMbThreshold)
             {
-                var amountToRemoveMB = totalSizeMB - lowMBThreshold;
-                WriteToConsoleAndToLog($"Total size {totalSizeMB:0.##}[MB] exceeds threshold of {highMBThreshold}[MB]. Need to delete {amountToRemoveMB:0.##}[MB]");
+                var amountToRemoveMB = totalSizeMB - settings.LowMbThreshold;
+                WriteToConsoleAndToLog($"Total size {totalSizeMB:0.##}[MB] exceeds threshold of {settings.HighMbThreshold}[MB]. Need to delete {amountToRemoveMB:0.##}[MB]");
 
                 // Filter out files that should not be removed
-                var filesInDestination = GetListOfFileNamesFromDestinationFolder();
+                var filesInDestination = GetListOfFileNamesFromDestinationFolder(settings.DestinationFolder);
                 var validSourceFilesForDeletion = _sourceFiles
                     .Where(x => filesInDestination.Contains(x.Name)) // Only delete files that have been copied
                     .Where(x => x.LastWriteTimeUtc < DateTime.UtcNow.AddMonths(-1)) // For cases where the 'created' attribute is missing (e.g. when mapping a drive over WebDAV)
