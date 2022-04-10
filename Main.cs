@@ -165,11 +165,11 @@ namespace CleanMyPhone
             var txtBox = new TextBox();
             txtBox.Multiline = true;
             txtBox.Margin = new Padding(0, 0, 0, 8);
-            txtBox.Width = this.panelSettings.Width - 30;
-            txtBox.Height = this.panelSettings.Height - 10;
+            txtBox.Width = this.panelSettings.Width - 6;
+            txtBox.Height = this.panelSettings.Height - 12;
             txtBox.Tag = txtBox.Text = selectedDeviceSettings.ToText();
             txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();
-            txtBox.WordWrap = false;
+            txtBox.WordWrap = false;            
             this.panelSettings.Controls.AddRange(new Control[] { txtBox });            
         }
 
