@@ -15,7 +15,7 @@ namespace CleanMyPhone
 {
     public partial class Main : Form
     {
-        private Dictionary<string, CleanerSettings> _settingsByDeviceID;
+        private Dictionary<string, ICleanerSettings> _settingsByDeviceID;
         private List<SingleDevicePhoneCleaner> _cleaners = new List<SingleDevicePhoneCleaner>();
         private Dictionary<SingleDevicePhoneCleaner, List<string>> _logs = new Dictionary<SingleDevicePhoneCleaner, List<string>>();
         private string _selectedDeviceID;
@@ -29,7 +29,7 @@ namespace CleanMyPhone
 
         private async void Main_Load(object sender, EventArgs e)
         {
-            _settingsByDeviceID = CleanerSettings.GetAllConfigs(GetAppFolder());
+            _settingsByDeviceID = CleanerSettingsFactory.GetAllConfigs(GetAppFolder());
             foreach (var settings in _settingsByDeviceID)
             {
                 await AddOrUpdateCleaner(settings.Key, settings.Value);
@@ -38,7 +38,7 @@ namespace CleanMyPhone
                 this.cmbDevices.SelectedIndex = 0;
         }
 
-        private async Task AddOrUpdateCleaner(string deviceID, CleanerSettings settings)
+        private async Task AddOrUpdateCleaner(string deviceID, ICleanerSettings settings)
         {
             // Add to combo box
             if (!this.cmbDevices.Items.OfType<string>().Any(x => x == deviceID))
@@ -95,14 +95,24 @@ namespace CleanMyPhone
             _selectedDeviceID = this.cmbDevices.SelectedItem.ToString();
 
             var selectedDeviceSettings = _settingsByDeviceID[_selectedDeviceID];
+            if (selectedDeviceSettings is CleanerSettingsV1)
+                RenderSettingsV1(selectedDeviceSettings as CleanerSettingsV1);
+            if (selectedDeviceSettings is CleanerSettingsV2)
+                RenderSettingsV2(selectedDeviceSettings as CleanerSettingsV2);
+
+            UpdateRollingLogBasedOnSelectedDevice();
+        }
+
+        private void RenderSettingsV1(CleanerSettingsV1 selectedDeviceSettings )
+        {
             this.panelSettings.Controls.Clear();
-            foreach (var prop in typeof(CleanerSettings).GetProperties())
+            foreach (var prop in typeof(CleanerSettingsV1).GetProperties())
             {
                 var name = prop.Name;
                 var value = prop.GetValue(selectedDeviceSettings).ToString();
                 var label = new Label() { Text = name, Margin = new Padding(0), Height = 15, BackColor = Color.LightBlue, Width = this.panelSettings.Width - 30 };
 
-                Control valueCtrl;
+                Control valueCtrl = null;
                 if (prop.PropertyType == typeof(int))
                 {
                     var numeric = new NumericUpDown() { Minimum = int.MinValue, Maximum = int.MaxValue };
@@ -116,7 +126,7 @@ namespace CleanMyPhone
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var checkBox = new CheckBox() { Checked = bool.Parse(value)};
+                    var checkBox = new CheckBox() { Checked = bool.Parse(value) };
                     checkBox.CheckedChanged += (s1, e1) =>
                     {
                         (s1 as CheckBox).Text = (s1 as CheckBox).Checked.ToString();
@@ -125,7 +135,8 @@ namespace CleanMyPhone
                     };
                     valueCtrl = checkBox;
                 }
-                else {
+                else if (prop.PropertyType == typeof(string))
+                {
                     var txtBox = new TextBox();
                     txtBox.TextChanged += (s1, e1) =>
                     {
@@ -135,16 +146,31 @@ namespace CleanMyPhone
                     valueCtrl = txtBox;
                 }
 
-                valueCtrl.Margin = new Padding(0, 0, 0, 8);
-                valueCtrl.Width = this.panelSettings.Width - 30;
-                valueCtrl.Tag = value;
-                valueCtrl.Text = value;
-                
-                this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
+                if (valueCtrl != null)
+                {
+                    valueCtrl.Margin = new Padding(0, 0, 0, 8);
+                    valueCtrl.Width = this.panelSettings.Width - 30;
+                    valueCtrl.Tag = value;
+                    valueCtrl.Text = value;
+
+                    this.panelSettings.Controls.AddRange(new Control[] { label, valueCtrl });
+                }
                 EnableDisableSaveChangesButton();
             }
+        }
 
-            UpdateRollingLogBasedOnSelectedDevice();
+        private void RenderSettingsV2(CleanerSettingsV2 selectedDeviceSettings)
+        {
+            this.panelSettings.Controls.Clear();
+            var txtBox = new TextBox();
+            txtBox.Multiline = true;
+            txtBox.Margin = new Padding(0, 0, 0, 8);
+            txtBox.Width = this.panelSettings.Width - 6;
+            txtBox.Height = this.panelSettings.Height - 12;
+            txtBox.Tag = txtBox.Text = selectedDeviceSettings.ToText();
+            txtBox.TextChanged += (s1, e1) => EnableDisableSaveChangesButton();
+            txtBox.WordWrap = false;            
+            this.panelSettings.Controls.AddRange(new Control[] { txtBox });            
         }
 
         private void EnableDisableSaveChangesButton()
@@ -205,7 +231,22 @@ namespace CleanMyPhone
 
         private async void btnSaveChanges_Click(object sender, EventArgs e)
         {
-            _settingsByDeviceID[_selectedDeviceID].Save();
+            var selectedSettings = _settingsByDeviceID[_selectedDeviceID];
+            if (selectedSettings is CleanerSettingsV2)
+            {
+                var txt = this.panelSettings.Controls.Cast<Control>().OfType<TextBox>().FirstOrDefault()?.Text;
+                try
+                {
+                    (selectedSettings as CleanerSettingsV2).UpdateFromText(txt);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Invalid input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                } 
+            }
+
+            selectedSettings.Save();
             foreach (Control ctrl in this.panelSettings.Controls)
                 if (ctrl.Tag != null)
                     ctrl.Tag = ctrl.Text;
@@ -220,7 +261,7 @@ namespace CleanMyPhone
             f.ShowDialog();
 
             // Reload new items that were added (if any)
-            var freshSettings = CleanerSettings.GetAllConfigs(GetAppFolder());
+            var freshSettings = CleanerSettingsFactory.GetAllConfigs(GetAppFolder());
             if (freshSettings.Count == 1) // This is the first item added
                 _selectedDeviceID = freshSettings.First().Key;
             var addedDevices = freshSettings.Where(x => !_settingsByDeviceID.ContainsKey(x.Key));
