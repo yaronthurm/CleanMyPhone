@@ -406,7 +406,7 @@ namespace CleanMyPhone
                         RecordCopiedFileToFileActivityArchive(missingFile.Name, Path.Combine(settings.DestinationFolder, destinationPath));
                     }
                 }
-                Directory.Delete(tmpFolder);
+                Directory.Delete(tmpFolder, true);
             }
         }
 
